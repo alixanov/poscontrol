@@ -9,14 +9,11 @@ import {
   KeyRound,
   Mail,
   Lock,
-  ShieldCheck,
-  UserCheck,
+  Eye,
+  EyeOff,
   AlertCircle,
   ArrowRight,
   Sparkles,
-  Shield,
-  Activity,
-  CheckCircle2,
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -26,6 +23,7 @@ export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<'credentials' | 'pin'>('credentials');
   const [email, setEmail] = useState('admin@store.local');
   const [password, setPassword] = useState('admin123');
+  const [showPassword, setShowPassword] = useState(false);
   const [pinCode, setPinCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -93,15 +91,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50 text-slate-900">
-      {/* LEFT COLUMN: Clean, Bright Enterprise Branding & Presentation */}
-      <div className="relative hidden lg:flex lg:w-1/2 xl:w-7/12 flex-col justify-between overflow-hidden bg-gradient-to-br from-slate-100 via-blue-50/30 to-indigo-50/40 p-12 lg:p-16 border-r border-slate-200/80">
-        {/* Soft Ambient Background Circles */}
-        <div className="pointer-events-none absolute -left-20 -top-20 h-96 w-96 rounded-full bg-blue-400/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 right-10 h-96 w-96 rounded-full bg-indigo-400/10 blur-3xl" />
+    <div className="relative flex min-h-screen w-full bg-slate-50 text-slate-900 overflow-hidden">
+      {/* Seamless ambient background soft glow */}
+      <div className="pointer-events-none absolute -left-20 -top-20 h-96 w-96 rounded-full bg-blue-400/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-10 left-1/3 h-96 w-96 rounded-full bg-indigo-400/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-20 -right-20 h-96 w-96 rounded-full bg-blue-400/10 blur-3xl" />
 
+      {/* LEFT COLUMN: Clean Enterprise Presentation */}
+      <div className="relative hidden lg:flex lg:w-1/2 xl:w-7/12 flex-col justify-between p-12 lg:p-16 z-10">
         {/* Top Brand Header */}
-        <div className="relative z-10">
+        <div>
           <div className="flex items-center gap-3.5">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-500/25">
               <Store className="h-6 w-6" />
@@ -118,9 +117,9 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Center Presentation: The Clean, Minimalist Text */}
-        <div className="relative z-10 my-auto py-12 max-w-xl space-y-6">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100/70 px-3 py-1 text-xs font-semibold text-blue-700 border border-blue-200">
+        {/* Center Presentation: Balanced and clean */}
+        <div className="my-auto py-8 max-w-xl space-y-6">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100/80 px-3 py-1 text-xs font-semibold text-blue-700 border border-blue-200">
             <Sparkles className="h-3.5 w-3.5" />
             Автоматизация торговли и склада
           </span>
@@ -133,16 +132,30 @@ export default function LoginPage() {
             Надежная платформа для оперативного учета складских остатков, продаж через быстрый кассовый терминал и финансовой аналитики в реальном времени.
           </p>
 
+          <div className="grid grid-cols-3 gap-6 pt-6 border-t border-slate-200/80">
+            <div>
+              <div className="text-xl font-bold text-slate-900 tracking-tight">0.1 с</div>
+              <div className="text-xs text-slate-500 mt-0.5">Сканирование EAN-13</div>
+            </div>
+            <div>
+              <div className="text-xl font-bold text-slate-900 tracking-tight">80 / 58 мм</div>
+              <div className="text-xs text-slate-500 mt-0.5">Термопечать чеков</div>
+            </div>
+            <div>
+              <div className="text-xl font-bold text-slate-900 tracking-tight">Автономно</div>
+              <div className="text-xs text-slate-500 mt-0.5">Учет смен и остатков</div>
+            </div>
+          </div>
         </div>
 
         {/* Bottom clean version */}
-        <div className="relative z-10 text-xs text-slate-400">
+        <div className="text-xs text-slate-400">
           <span>Склад & Магазин © 2026. Все права защищены.</span>
         </div>
       </div>
 
-      {/* RIGHT COLUMN: Crisp Pure White Elevated Login Box */}
-      <div className="flex flex-1 flex-col justify-center px-6 py-12 sm:px-12 lg:w-1/2 xl:w-5/12 bg-white lg:bg-slate-50/50">
+      {/* RIGHT COLUMN: Elevated Crisp Login Card */}
+      <div className="flex flex-1 flex-col justify-center px-6 py-12 sm:px-12 lg:w-1/2 xl:w-5/12 z-10">
         <div className="mx-auto w-full max-w-md">
           {/* Mobile Header (visible only on smaller screens) */}
           <div className="mb-8 lg:hidden flex items-center gap-3">
@@ -155,7 +168,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50">
+          <div className="rounded-3xl border border-slate-200/80 bg-white p-8 shadow-xl shadow-slate-200/60">
             <div className="mb-6">
               <h2 className="text-2xl font-bold tracking-tight text-slate-900">
                 Авторизация в системе
@@ -220,7 +233,7 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="admin@store.local"
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-4 text-sm font-medium text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                      className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm font-medium text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-500/15"
                     />
                   </div>
                 </div>
@@ -232,13 +245,25 @@ export default function LoginPage() {
                   <div className="relative">
                     <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
                     <input
-                      type="password"
+                      type={showPassword ? 'text' : 'password'}
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-4 text-sm font-medium text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                      className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-11 text-sm font-medium text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-500/15"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-2.5 p-0.5 text-slate-400 hover:text-slate-600 transition"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
                   </div>
                 </div>
 
