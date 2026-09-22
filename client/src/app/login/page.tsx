@@ -103,7 +103,7 @@ export default function LoginPage() {
       <div className="pointer-events-none absolute -bottom-20 -right-20 h-[450px] w-[500px] rounded-full bg-blue-200/25 blur-3xl" />
 
       {/* LEFT COLUMN: Clean Enterprise Presentation */}
-      <div className="relative hidden lg:flex lg:w-1/2 xl:w-7/12 flex-col justify-between p-12 lg:p-16 z-10">
+      <div className="relative hidden lg:flex lg:w-1/2 xl:w-7/12 flex-col justify-between p-8 lg:p-12 xl:p-16 z-10">
         {/* Top Brand Header */}
         <div>
           <div className="flex items-center gap-3.5">
@@ -123,7 +123,7 @@ export default function LoginPage() {
         </div>
 
         {/* Center Presentation: Balanced and clean */}
-        <div className="my-auto py-8 max-w-xl space-y-6">
+        <div className="my-auto py-8 max-w-xl xl:max-w-2xl space-y-6">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100/80 px-3 py-1 text-xs font-semibold text-blue-700 border border-blue-200">
             <Sparkles className="h-3.5 w-3.5" />
             Автоматизация торговли и склада
@@ -137,30 +137,30 @@ export default function LoginPage() {
             Надежная платформа для оперативного учета складских остатков, продаж через быстрый кассовый терминал и финансовой аналитики в реальном времени.
           </p>
 
-          <div className="grid grid-cols-3 gap-5 pt-6 border-t border-slate-200/70">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/90 border border-slate-200/80 text-blue-600 shadow-sm shadow-blue-500/5">
+          <div className="flex flex-wrap items-center gap-3 pt-6 border-t border-slate-200/70">
+            <div className="flex items-center gap-3 rounded-2xl bg-white/90 px-4 py-2.5 border border-slate-200/80 shadow-sm shadow-blue-500/5 backdrop-blur-sm">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                 <Barcode className="h-5 w-5" />
               </div>
-              <span className="text-xs font-semibold text-slate-700 leading-snug">
+              <span className="text-xs font-semibold text-slate-700 whitespace-nowrap">
                 Сканирование EAN-13
               </span>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/90 border border-slate-200/80 text-blue-600 shadow-sm shadow-blue-500/5">
+            <div className="flex items-center gap-3 rounded-2xl bg-white/90 px-4 py-2.5 border border-slate-200/80 shadow-sm shadow-blue-500/5 backdrop-blur-sm">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                 <Printer className="h-5 w-5" />
               </div>
-              <span className="text-xs font-semibold text-slate-700 leading-snug">
+              <span className="text-xs font-semibold text-slate-700 whitespace-nowrap">
                 Термопечать чеков
               </span>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/90 border border-slate-200/80 text-blue-600 shadow-sm shadow-blue-500/5">
+            <div className="flex items-center gap-3 rounded-2xl bg-white/90 px-4 py-2.5 border border-slate-200/80 shadow-sm shadow-blue-500/5 backdrop-blur-sm">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                 <Boxes className="h-5 w-5" />
               </div>
-              <span className="text-xs font-semibold text-slate-700 leading-snug">
+              <span className="text-xs font-semibold text-slate-700 whitespace-nowrap">
                 Учет смен и остатков
               </span>
             </div>
@@ -174,7 +174,7 @@ export default function LoginPage() {
       </div>
 
       {/* RIGHT COLUMN: Elevated Crisp Login Card */}
-      <div className="flex flex-1 flex-col justify-center px-6 py-12 sm:px-12 lg:w-1/2 xl:w-5/12 z-10">
+      <div className="flex flex-1 flex-col justify-center px-4 py-8 sm:px-8 sm:py-12 lg:w-1/2 xl:w-5/12 z-10">
         <div className="mx-auto w-full max-w-md">
           {/* Mobile Header (visible only on smaller screens) */}
           <div className="mb-8 lg:hidden flex items-center gap-3">
@@ -187,7 +187,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-white/80 bg-white/95 p-8 shadow-xl shadow-slate-200/70 backdrop-blur-md">
+          <div className="rounded-3xl border border-white/80 bg-white/95 p-6 sm:p-8 shadow-xl shadow-slate-200/70 backdrop-blur-md">
             <div className="mb-6">
               <h2 className="text-2xl font-bold tracking-tight text-slate-900">
                 Авторизация в системе
