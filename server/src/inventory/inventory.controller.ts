@@ -15,7 +15,7 @@ import {
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { Role, MovementType } from '@prisma/client';
+import { Role, MovementType } from '../common/types';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AuditLogService } from '../audit-log/audit-log.service';
 

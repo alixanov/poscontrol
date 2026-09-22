@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { MovementType } from '@prisma/client';
+import { MovementType } from '../../common/types';
 
 export class MovementItemDto {
   @ApiProperty({ example: 'uuid-of-product' })

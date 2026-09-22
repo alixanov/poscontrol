@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { PaymentMethod } from '@prisma/client';
+import { PaymentMethod } from '../../common/types';
 
 export class OpenShiftDto {
   @ApiProperty({ example: 5000.0, description: 'Разменная сумма в кассе при открытии' })

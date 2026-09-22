@@ -1,4 +1,5 @@
-import { PrismaClient, Role, PaymentMethod, ShiftStatus, OrderStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { Role, PaymentMethod, ShiftStatus, OrderStatus } from '../src/common/types';
 import * as argon2 from 'argon2';
 
 const prisma = new PrismaClient();

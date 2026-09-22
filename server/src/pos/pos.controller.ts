@@ -17,7 +17,7 @@ import {
 } from './dto/pos.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { OrderStatus } from '@prisma/client';
+import { OrderStatus } from '../common/types';
 import { AuditLogService } from '../audit-log/audit-log.service';
 
 @ApiTags('pos')

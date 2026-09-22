@@ -8,7 +8,7 @@ import {
   CreateStockMovementDto,
   CreateWarehouseDto,
 } from './dto/inventory.dto';
-import { MovementType } from '@prisma/client';
+import { MovementType } from '../common/types';
 
 @Injectable()
 export class InventoryService {

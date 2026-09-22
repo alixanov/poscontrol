@@ -10,7 +10,7 @@ import {
   CreateOrderDto,
   RefundOrderDto,
 } from './dto/pos.dto';
-import { ShiftStatus, OrderStatus, PaymentMethod } from '@prisma/client';
+import { ShiftStatus, OrderStatus, PaymentMethod } from '../common/types';
 
 @Injectable()
 export class PosService {
@@ -47,8 +47,14 @@ export class PosService {
       throw new BadRequestException('У вас уже есть открытая кассовая смена');
     }
 
+    const lastShift = await this.prisma.cashShift.findFirst({
+      orderBy: { openedAt: 'desc' },
+    });
+    const nextShiftNumber = (lastShift?.shiftNumber || 0) + 1;
+
     return this.prisma.cashShift.create({
       data: {
+        shiftNumber: nextShiftNumber,
         cashierId,
         startingCash: dto.startingCash,
         expectedCash: dto.startingCash,
