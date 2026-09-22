@@ -12,14 +12,14 @@ import {
   ShieldCheck,
   UserCheck,
   AlertCircle,
-  Barcode,
-  Boxes,
-  TrendingUp,
-  Receipt,
-  CheckCircle2,
   ArrowRight,
   Sparkles,
-  Layers,
+  Shield,
+  Activity,
+  CheckCircle2,
+  Barcode,
+  TrendingUp,
+  Cpu,
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -96,106 +96,173 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-900">
-      {/* LEFT COLUMN: Serious Enterprise Branding & Features Showcase */}
-      <div className="relative hidden lg:flex lg:w-1/2 xl:w-7/12 flex-col justify-between overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-12 text-white border-r border-slate-800">
-        {/* Ambient Decorative Background Glows */}
-        <div className="absolute -left-20 -top-20 h-96 w-96 rounded-full bg-blue-600/15 blur-3xl pointer-events-none" />
-        <div className="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-indigo-600/15 blur-3xl pointer-events-none" />
-        <div className="absolute left-1/3 top-1/2 h-80 w-80 rounded-full bg-emerald-600/10 blur-3xl pointer-events-none" />
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#070b14] text-slate-100 p-6 lg:p-14 selection:bg-blue-500/30">
+      {/* 1. Subtle Precision Dot Grid Texture */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.14]"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
+        }}
+      />
 
-        {/* Top Branding */}
-        <div className="relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white shadow-xl shadow-blue-500/25 border border-blue-400/30">
-              <Store className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="text-xl font-black tracking-tight text-white flex items-center gap-2">
-                Склад & Магазин
-                <span className="rounded-full bg-blue-500/20 px-2.5 py-0.5 text-[10px] font-bold text-blue-300 border border-blue-400/30 uppercase tracking-wider">
-                  ERP & POS
-                </span>
-              </div>
-              <p className="text-xs text-slate-400">Система автоматизации розничной торговли и логистики</p>
-            </div>
-          </div>
-        </div>
+      {/* 2. Soft Ambient Vignette & Lights */}
+      <div className="pointer-events-none absolute -left-40 -top-40 h-[600px] w-[600px] rounded-full bg-blue-600/10 blur-[140px]" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[600px] w-[600px] rounded-full bg-indigo-600/15 blur-[150px]" />
+      <div className="pointer-events-none absolute left-1/3 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[450px] w-[450px] rounded-full bg-emerald-500/5 blur-[160px]" />
 
-        {/* Center Presentation: Serious Minimalist Branding */}
-        <div className="relative z-10 my-auto py-12 max-w-lg space-y-6">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400 border border-blue-500/20">
-            <Sparkles className="h-3.5 w-3.5" />
-            Автоматизация торговли и склада
-          </span>
-          <h2 className="text-3xl xl:text-5xl font-black tracking-tight text-white leading-tight">
-            Управление магазином, складом и кассой в единой системе
-          </h2>
-          <p className="text-sm text-slate-400 leading-relaxed">
-            Надежная платформа для оперативного учета складских остатков, продаж через быстрый кассовый терминал и финансовой аналитики в реальном времени.
-          </p>
-
-          <div className="pt-6 flex items-center gap-6 text-xs text-slate-400 border-t border-slate-800/60">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              <span>База данных онлайн</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-blue-400" />
-              <span>POS-касса активна</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-purple-400" />
-              <span>Склад синхронизирован</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Trust / Status Badge */}
-        <div className="relative z-10 flex items-center justify-between border-t border-slate-800/80 pt-6 text-xs text-slate-400">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Все сервисы системы активны и работают штатно</span>
-          </div>
-          <span className="font-mono text-[11px] text-slate-500">v1.0 • Enterprise Ready</span>
-        </div>
-      </div>
-
-      {/* RIGHT COLUMN: Serious Clean Login Box */}
-      <div className="flex flex-1 flex-col justify-center px-6 py-12 sm:px-12 lg:w-1/2 xl:w-5/12 bg-slate-950">
-        <div className="mx-auto w-full max-w-md">
-          {/* Mobile Header (visible only on smaller screens) */}
-          <div className="mb-8 lg:hidden flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg">
+      <div className="relative z-10 grid w-full max-w-6xl grid-cols-1 items-center gap-12 lg:grid-cols-12">
+        {/* LEFT COLUMN: Clean, High-End Typography & Frosted Terminal Visual */}
+        <div className="flex flex-col justify-between space-y-8 lg:col-span-7">
+          {/* Logo & System Brand */}
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/20 border border-white/10">
               <Store className="h-5 w-5" />
             </div>
             <div>
-              <div className="font-bold text-white">Склад & Магазин</div>
-              <div className="text-xs text-slate-400">Вход в рабочую среду</div>
+              <div className="flex items-center gap-2 text-lg font-bold tracking-tight text-white">
+                Склад & Магазин
+                <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] font-mono font-medium text-slate-300 border border-white/[0.08]">
+                  ERP • POS
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">Автоматизация розницы, склада и кассовых операций</p>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-8 shadow-2xl backdrop-blur-xl">
+          {/* Typography Header */}
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-1 text-xs font-medium text-slate-300 backdrop-blur-md">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Торговая экосистема нового поколения
+            </div>
+
+            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl leading-[1.15] bg-gradient-to-b from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+              Управление магазином, складом и кассой в единой системе
+            </h1>
+
+            <p className="text-sm text-slate-400 max-w-xl leading-relaxed font-normal">
+              Точный оперативный учёт остатков, мгновенное сканирование штрихкодов на кассе и прозрачная финансовая аналитика без задержек.
+            </p>
+          </div>
+
+          {/* SINGLE AESTHETIC VISUAL ELEMENT: Frosted Glass Terminal Card */}
+          <div className="relative max-w-lg rounded-3xl border border-white/[0.08] bg-white/[0.02] p-6 shadow-2xl backdrop-blur-2xl">
+            {/* Subtle inner highlight glow */}
+            <div className="absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-blue-400/40 to-transparent" />
+
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-3.5 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
+                <span className="text-xs font-semibold text-slate-200">
+                  Торговая точка №1 • Смена открыта
+                </span>
+              </div>
+              <span className="rounded-full bg-white/[0.04] px-2.5 py-0.5 text-[10px] font-mono text-slate-400 border border-white/[0.05]">
+                Касса 01 • онлайн
+              </span>
+            </div>
+
+            {/* Stylized Barcode Scanner Graphic */}
+            <div className="rounded-2xl border border-white/[0.05] bg-black/40 p-4 mb-4">
+              <div className="flex items-center justify-between text-[11px] text-slate-400 mb-2">
+                <span className="flex items-center gap-1.5">
+                  <Barcode className="h-4 w-4 text-blue-400" />
+                  Сканер EAN-13 готов к считыванию
+                </span>
+                <span className="font-mono text-slate-300">0.12 сек/чек</span>
+              </div>
+
+              {/* Barcode visual lines */}
+              <div className="flex h-10 items-center justify-between px-2 bg-slate-950/60 rounded-xl border border-white/[0.04]">
+                <div className="flex items-center gap-[3px] opacity-70">
+                  <span className="h-6 w-[2px] bg-white" />
+                  <span className="h-6 w-[1px] bg-white" />
+                  <span className="h-6 w-[3px] bg-white" />
+                  <span className="h-6 w-[1px] bg-white" />
+                  <span className="h-6 w-[2px] bg-white" />
+                  <span className="h-6 w-[4px] bg-white" />
+                  <span className="h-6 w-[1px] bg-white" />
+                  <span className="h-6 w-[2px] bg-white" />
+                  <span className="h-6 w-[3px] bg-white" />
+                  <span className="h-6 w-[1px] bg-white" />
+                  <span className="h-6 w-[2px] bg-white" />
+                  <span className="h-6 w-[1px] bg-white" />
+                  <span className="h-6 w-[3px] bg-white" />
+                  <span className="h-6 w-[1px] bg-white" />
+                </div>
+                <span className="font-mono text-xs font-bold text-blue-400 tracking-widest">
+                  4607001234567
+                </span>
+              </div>
+            </div>
+
+            {/* Two Key Metrics */}
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="rounded-2xl border border-white/[0.05] bg-white/[0.01] p-3">
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider">Выручка за сегодня</div>
+                <div className="text-lg font-bold text-white mt-0.5">34 850 ₽</div>
+                <div className="text-[10px] text-emerald-400 mt-0.5 flex items-center gap-1">
+                  <TrendingUp className="h-3 w-3" />
+                  Чистая маржа: 14 200 ₽
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-white/[0.05] bg-white/[0.01] p-3">
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider">Складской остаток</div>
+                <div className="text-lg font-bold text-white mt-0.5">540 позиций</div>
+                <div className="text-[10px] text-blue-400 mt-0.5 flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Синхронизация 100%
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Minimal Footnote */}
+          <div className="flex items-center gap-6 text-xs text-slate-400">
+            <span className="flex items-center gap-1.5">
+              <Shield className="h-3.5 w-3.5 text-blue-400" />
+              Шифрование Argon2
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Activity className="h-3.5 w-3.5 text-emerald-400" />
+              Сквозной аудит
+            </span>
+            <span className="text-slate-600 hidden sm:inline">•</span>
+            <span className="font-mono text-[11px] text-slate-500 hidden sm:inline">v1.0 Production</span>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: Elevated Glassmorphic Login Box */}
+        <div className="lg:col-span-5">
+          <div className="relative rounded-3xl border border-white/[0.08] bg-white/[0.02] p-8 shadow-2xl backdrop-blur-2xl">
+            {/* Top delicate hairline */}
+            <div className="absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+
             <div className="mb-6">
-              <h1 className="text-2xl font-bold tracking-tight text-white">
+              <h2 className="text-xl font-bold tracking-tight text-white">
                 Авторизация в системе
-              </h1>
+              </h2>
               <p className="mt-1 text-xs text-slate-400">
-                Выберите способ входа в зависимости от вашей должности
+                Выберите подходящий способ входа для вашей должности
               </p>
             </div>
 
             {/* Segmented Tab Switcher */}
-            <div className="mb-6 flex rounded-xl bg-slate-800/80 p-1 border border-slate-700/50">
+            <div className="mb-6 flex rounded-xl bg-black/40 p-1 border border-white/[0.06]">
               <button
                 type="button"
                 onClick={() => {
                   setActiveTab('credentials');
                   setError(null);
                 }}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-bold transition ${
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-semibold transition ${
                   activeTab === 'credentials'
-                    ? 'bg-blue-600 text-white shadow-md'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/25'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -208,9 +275,9 @@ export default function LoginPage() {
                   setActiveTab('pin');
                   setError(null);
                 }}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-bold transition ${
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-semibold transition ${
                   activeTab === 'pin'
-                    ? 'bg-blue-600 text-white shadow-md'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/25'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -229,7 +296,7 @@ export default function LoginPage() {
             {activeTab === 'credentials' ? (
               <form onSubmit={handleCredentialsLogin} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
                     Электронная почта
                   </label>
                   <div className="relative">
@@ -240,13 +307,13 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="admin@store.local"
-                      className="w-full rounded-xl border border-slate-700 bg-slate-800/60 py-2.5 pl-10 pr-4 text-sm font-medium text-white placeholder-slate-500 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full rounded-xl border border-white/[0.08] bg-black/40 py-2.5 pl-10 pr-4 text-sm font-medium text-white placeholder-slate-500 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
                     Пароль
                   </label>
                   <div className="relative">
@@ -257,7 +324,7 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full rounded-xl border border-slate-700 bg-slate-800/60 py-2.5 pl-10 pr-4 text-sm font-medium text-white placeholder-slate-500 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full rounded-xl border border-white/[0.08] bg-black/40 py-2.5 pl-10 pr-4 text-sm font-medium text-white placeholder-slate-500 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
                 </div>
@@ -265,9 +332,9 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/30 transition hover:from-blue-500 hover:to-indigo-500 active:scale-[0.99] disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-500 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition active:scale-[0.99] disabled:opacity-50"
                 >
-                  <span>{loading ? 'Проверка данных...' : 'Войти в панель'}</span>
+                  <span>{loading ? 'Проверка данных...' : 'Войти в систему'}</span>
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </form>
@@ -280,10 +347,10 @@ export default function LoginPage() {
                   {[0, 1, 2, 3].map((idx) => (
                     <div
                       key={idx}
-                      className={`h-4 w-4 rounded-full border-2 transition-all duration-150 ${
+                      className={`h-4 w-4 rounded-full border transition-all duration-150 ${
                         pinCode.length > idx
                           ? 'border-blue-500 bg-blue-500 scale-110 shadow-lg shadow-blue-500/50'
-                          : 'border-slate-700 bg-slate-800'
+                          : 'border-white/10 bg-white/[0.04]'
                       }`}
                     />
                   ))}
@@ -300,7 +367,7 @@ export default function LoginPage() {
                         else if (k === '⌫') setPinCode((prev) => prev.slice(0, -1));
                         else handlePinKey(k);
                       }}
-                      className="flex h-12 items-center justify-center rounded-xl bg-slate-800 border border-slate-700/60 text-lg font-bold text-white transition hover:bg-slate-700 active:scale-95 shadow-sm"
+                      className="flex h-12 items-center justify-center rounded-xl bg-white/[0.03] border border-white/[0.06] text-lg font-bold text-white transition hover:bg-white/[0.08] active:scale-95 shadow-sm"
                     >
                       {k}
                     </button>
@@ -309,49 +376,28 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Quick Demo Login Cards */}
-            <div className="mt-8 border-t border-slate-800 pt-5">
-              <span className="block text-center text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-3">
-                Быстрый вход для тестирования:
-              </span>
-
-              <div className="grid grid-cols-1 gap-2">
+            {/* Subtle Quick Demo Login Shortcuts */}
+            <div className="mt-8 border-t border-white/[0.06] pt-4">
+              <div className="flex items-center justify-between text-[11px] text-slate-400 mb-2">
+                <span>Быстрый демо-доступ:</span>
+                <span className="text-slate-400">Автозаполнение</span>
+              </div>
+              <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => handleQuickFill('admin@store.local', 'admin123')}
-                  className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-800/40 p-3 text-left transition hover:border-blue-500/50 hover:bg-slate-800"
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.02] py-2 text-xs font-medium text-slate-300 hover:border-blue-500/40 hover:text-white transition"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/20 text-blue-400">
-                      <ShieldCheck className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-white">Администратор (Полный доступ)</div>
-                      <div className="text-[10px] text-slate-400">admin@store.local</div>
-                    </div>
-                  </div>
-                  <span className="rounded-md bg-slate-700 px-2 py-0.5 text-[10px] font-mono text-slate-300">
-                    PIN: 1111
-                  </span>
+                  <ShieldCheck className="h-3.5 w-3.5 text-blue-400" />
+                  Администратор
                 </button>
-
                 <button
                   type="button"
                   onClick={() => handleQuickFill('cashier1@store.local', 'cashier123')}
-                  className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-800/40 p-3 text-left transition hover:border-emerald-500/50 hover:bg-slate-800"
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.02] py-2 text-xs font-medium text-slate-300 hover:border-emerald-500/40 hover:text-white transition"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
-                      <UserCheck className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-white">Кассир 1 (POS-терминал)</div>
-                      <div className="text-[10px] text-slate-400">cashier1@store.local</div>
-                    </div>
-                  </div>
-                  <span className="rounded-md bg-slate-700 px-2 py-0.5 text-[10px] font-mono text-slate-300">
-                    PIN: 2222
-                  </span>
+                  <UserCheck className="h-3.5 w-3.5 text-emerald-400" />
+                  Кассир 1
                 </button>
               </div>
             </div>
