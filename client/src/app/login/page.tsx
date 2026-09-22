@@ -122,61 +122,31 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Center Presentation: Value Propositions */}
-        <div className="relative z-10 my-auto py-10 max-w-xl space-y-8">
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400 border border-blue-500/20 mb-3">
-              <Sparkles className="h-3.5 w-3.5" />
-              Комплексное решение для бизнеса
-            </span>
-            <h2 className="text-3xl xl:text-4xl font-black tracking-tight text-white leading-tight">
-              Полный контроль над продажами, остатками и персоналом
-            </h2>
-            <p className="mt-3 text-sm text-slate-300 leading-relaxed">
-              Современная платформа, объединяющая высокоскоростной кассовый терминал кассира и расширенную аналитическую панель администратора.
-            </p>
-          </div>
+        {/* Center Presentation: Serious Minimalist Branding */}
+        <div className="relative z-10 my-auto py-12 max-w-lg space-y-6">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400 border border-blue-500/20">
+            <Sparkles className="h-3.5 w-3.5" />
+            Автоматизация торговли и склада
+          </span>
+          <h2 className="text-3xl xl:text-5xl font-black tracking-tight text-white leading-tight">
+            Управление магазином, складом и кассой в единой системе
+          </h2>
+          <p className="text-sm text-slate-400 leading-relaxed">
+            Надежная платформа для оперативного учета складских остатков, продаж через быстрый кассовый терминал и финансовой аналитики в реальном времени.
+          </p>
 
-          {/* 4 Feature Highlights Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-4 backdrop-blur-md hover:border-slate-700 transition">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/20 text-blue-400 mb-3">
-                <Barcode className="h-5 w-5" />
-              </div>
-              <h3 className="text-sm font-bold text-white">Кассовый POS-модуль</h3>
-              <p className="mt-1 text-xs text-slate-400 leading-relaxed">
-                Автосканирование EAN-13, расчёт сдачи наличными, скидки и чек 80мм.
-              </p>
+          <div className="pt-6 flex items-center gap-6 text-xs text-slate-400 border-t border-slate-800/60">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              <span>База данных онлайн</span>
             </div>
-
-            <div className="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-4 backdrop-blur-md hover:border-slate-700 transition">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 mb-3">
-                <Boxes className="h-5 w-5" />
-              </div>
-              <h3 className="text-sm font-bold text-white">Складской учёт</h3>
-              <p className="mt-1 text-xs text-slate-400 leading-relaxed">
-                Приход от поставщиков, списание брака, перемещение между витриной и складом.
-              </p>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-blue-400" />
+              <span>POS-касса активна</span>
             </div>
-
-            <div className="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-4 backdrop-blur-md hover:border-slate-700 transition">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/20 text-purple-400 mb-3">
-                <TrendingUp className="h-5 w-5" />
-              </div>
-              <h3 className="text-sm font-bold text-white">Финансовая аналитика</h3>
-              <p className="mt-1 text-xs text-slate-400 leading-relaxed">
-                Расчёт валовой прибыли (выручка минус закупка), графики Recharts, средний чек.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-4 backdrop-blur-md hover:border-slate-700 transition">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 mb-3">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <h3 className="text-sm font-bold text-white">Безопасность & Аудит</h3>
-              <p className="mt-1 text-xs text-slate-400 leading-relaxed">
-                Роли RBAC, Argon2-хэширование, аудит-лог каждого действия и быстрый PIN.
-              </p>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-purple-400" />
+              <span>Склад синхронизирован</span>
             </div>
           </div>
         </div>
