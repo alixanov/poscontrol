@@ -14,6 +14,9 @@ import {
   AlertCircle,
   ArrowRight,
   Sparkles,
+  Barcode,
+  Printer,
+  Boxes,
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -91,11 +94,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen w-full bg-slate-50 text-slate-900 overflow-hidden">
-      {/* Seamless ambient background soft glow */}
-      <div className="pointer-events-none absolute -left-20 -top-20 h-96 w-96 rounded-full bg-blue-400/10 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-10 left-1/3 h-96 w-96 rounded-full bg-indigo-400/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-20 -right-20 h-96 w-96 rounded-full bg-blue-400/10 blur-3xl" />
+    <div className="relative flex min-h-screen w-full bg-gradient-to-br from-sky-50/60 via-slate-50/80 to-blue-50/50 text-slate-900 overflow-hidden">
+      {/* Cloud-like soft airy backdrop */}
+      <div className="pointer-events-none absolute -top-32 -left-20 h-[500px] w-[500px] rounded-full bg-sky-200/35 blur-3xl" />
+      <div className="pointer-events-none absolute top-10 left-1/4 h-[350px] w-[450px] rounded-full bg-white/90 blur-3xl" />
+      <div className="pointer-events-none absolute top-1/3 right-10 h-[450px] w-[600px] rounded-full bg-sky-100/50 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 left-1/3 h-[500px] w-[700px] rounded-full bg-white/90 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-20 -right-20 h-[450px] w-[500px] rounded-full bg-blue-200/25 blur-3xl" />
 
       {/* LEFT COLUMN: Clean Enterprise Presentation */}
       <div className="relative hidden lg:flex lg:w-1/2 xl:w-7/12 flex-col justify-between p-12 lg:p-16 z-10">
@@ -132,18 +137,32 @@ export default function LoginPage() {
             Надежная платформа для оперативного учета складских остатков, продаж через быстрый кассовый терминал и финансовой аналитики в реальном времени.
           </p>
 
-          <div className="grid grid-cols-3 gap-6 pt-6 border-t border-slate-200/80">
-            <div>
-              <div className="text-xl font-bold text-slate-900 tracking-tight">0.1 с</div>
-              <div className="text-xs text-slate-500 mt-0.5">Сканирование EAN-13</div>
+          <div className="grid grid-cols-3 gap-5 pt-6 border-t border-slate-200/70">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/90 border border-slate-200/80 text-blue-600 shadow-sm shadow-blue-500/5">
+                <Barcode className="h-5 w-5" />
+              </div>
+              <span className="text-xs font-semibold text-slate-700 leading-snug">
+                Сканирование EAN-13
+              </span>
             </div>
-            <div>
-              <div className="text-xl font-bold text-slate-900 tracking-tight">80 / 58 мм</div>
-              <div className="text-xs text-slate-500 mt-0.5">Термопечать чеков</div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/90 border border-slate-200/80 text-blue-600 shadow-sm shadow-blue-500/5">
+                <Printer className="h-5 w-5" />
+              </div>
+              <span className="text-xs font-semibold text-slate-700 leading-snug">
+                Термопечать чеков
+              </span>
             </div>
-            <div>
-              <div className="text-xl font-bold text-slate-900 tracking-tight">Автономно</div>
-              <div className="text-xs text-slate-500 mt-0.5">Учет смен и остатков</div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/90 border border-slate-200/80 text-blue-600 shadow-sm shadow-blue-500/5">
+                <Boxes className="h-5 w-5" />
+              </div>
+              <span className="text-xs font-semibold text-slate-700 leading-snug">
+                Учет смен и остатков
+              </span>
             </div>
           </div>
         </div>
@@ -168,7 +187,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-8 shadow-xl shadow-slate-200/60">
+          <div className="rounded-3xl border border-white/80 bg-white/95 p-8 shadow-xl shadow-slate-200/70 backdrop-blur-md">
             <div className="mb-6">
               <h2 className="text-2xl font-bold tracking-tight text-slate-900">
                 Авторизация в системе
