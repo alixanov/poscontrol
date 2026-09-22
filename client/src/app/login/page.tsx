@@ -122,56 +122,31 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Center Presentation: Modest, Calm, Aesthetic Typography */}
-        <div className="relative z-10 my-auto py-10 max-w-lg space-y-8">
-          <div className="space-y-4">
-            <span className="inline-flex items-center gap-2 rounded-full bg-slate-800/60 px-3 py-1 text-[11px] font-medium text-slate-300 border border-slate-700/50 backdrop-blur-md">
-              <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
-              Платформа автоматизации торговли
-            </span>
+        {/* Center Presentation: Serious Minimalist Branding */}
+        <div className="relative z-10 my-auto py-12 max-w-lg space-y-6">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400 border border-blue-500/20">
+            <Sparkles className="h-3.5 w-3.5" />
+            Автоматизация торговли и склада
+          </span>
+          <h2 className="text-3xl xl:text-5xl font-black tracking-tight text-white leading-tight">
+            Управление магазином, складом и кассой в единой системе
+          </h2>
+          <p className="text-sm text-slate-400 leading-relaxed">
+            Надежная платформа для оперативного учета складских остатков, продаж через быстрый кассовый терминал и финансовой аналитики в реальном времени.
+          </p>
 
-            <h2 className="text-3xl xl:text-4xl font-light tracking-tight text-white leading-tight">
-              Простота в управлении.<br />
-              <span className="font-semibold text-slate-200">Точность в каждой детали.</span>
-            </h2>
-
-            <p className="text-sm text-slate-400 leading-relaxed font-normal">
-              Единое цифровое пространство для кассовых расчётов, оперативного складского учёта и прозрачного финансового контроля.
-            </p>
-          </div>
-
-          {/* Understated, delicate feature list (without heavy cards) */}
-          <div className="space-y-3.5 pt-2 border-t border-slate-800/60">
-            <div className="flex items-baseline gap-4 text-xs">
-              <span className="font-mono text-slate-600 font-semibold">01</span>
-              <div>
-                <span className="font-semibold text-slate-200">Кассовый терминал</span>
-                <span className="text-slate-500"> — мгновенное сканирование штрихкодов, расчёт сдачи и чек 80мм</span>
-              </div>
+          <div className="pt-6 flex items-center gap-6 text-xs text-slate-400 border-t border-slate-800/60">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              <span>База данных онлайн</span>
             </div>
-
-            <div className="flex items-baseline gap-4 text-xs">
-              <span className="font-mono text-slate-600 font-semibold">02</span>
-              <div>
-                <span className="font-semibold text-slate-200">Складской учёт</span>
-                <span className="text-slate-500"> — контроль остатков, приходные накладные, списания и перемещения</span>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-blue-400" />
+              <span>POS-касса активна</span>
             </div>
-
-            <div className="flex items-baseline gap-4 text-xs">
-              <span className="font-mono text-slate-600 font-semibold">03</span>
-              <div>
-                <span className="font-semibold text-slate-200">Финансовая аналитика</span>
-                <span className="text-slate-500"> — расчёт валовой прибыли, средний чек и динамика выручки</span>
-              </div>
-            </div>
-
-            <div className="flex items-baseline gap-4 text-xs">
-              <span className="font-mono text-slate-600 font-semibold">04</span>
-              <div>
-                <span className="font-semibold text-slate-200">Безопасность и аудит</span>
-                <span className="text-slate-500"> — роли сотрудников, PIN-авторизация и сквозной журнал действий</span>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-purple-400" />
+              <span>Склад синхронизирован</span>
             </div>
           </div>
         </div>
