@@ -133,30 +133,11 @@ export default function LoginPage() {
             Надежная платформа для оперативного учета складских остатков, продаж через быстрый кассовый терминал и финансовой аналитики в реальном времени.
           </p>
 
-          {/* Clean Thin Status Line */}
-          <div className="pt-6 flex flex-wrap items-center gap-6 text-xs font-medium text-slate-600 border-t border-slate-200">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span>База данных онлайн</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-blue-600" />
-              <span>POS-касса активна</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-purple-600" />
-              <span>Склад синхронизирован</span>
-            </div>
-          </div>
         </div>
 
-        {/* Bottom Trust Badge */}
-        <div className="relative z-10 flex items-center justify-between border-t border-slate-200 pt-6 text-xs text-slate-500">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Все сервисы системы активны и работают штатно</span>
-          </div>
-          <span className="font-mono text-[11px] text-slate-400">v1.0 • Enterprise Ready</span>
+        {/* Bottom clean version */}
+        <div className="relative z-10 text-xs text-slate-400">
+          <span>Склад & Магазин © 2026. Все права защищены.</span>
         </div>
       </div>
 
@@ -307,53 +288,6 @@ export default function LoginPage() {
                 </div>
               </div>
             )}
-
-            {/* Subtle Demo Quick Access */}
-            <div className="mt-8 border-t border-slate-100 pt-5">
-              <span className="block text-center text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3">
-                Быстрый вход для тестирования:
-              </span>
-
-              <div className="grid grid-cols-1 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickFill('admin@store.local', 'admin123')}
-                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/80 p-3 text-left transition hover:border-blue-300 hover:bg-blue-50/30"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-                      <ShieldCheck className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-900">Администратор (Полный доступ)</div>
-                      <div className="text-[10px] text-slate-500">admin@store.local</div>
-                    </div>
-                  </div>
-                  <span className="rounded-md bg-white border border-slate-200 px-2 py-0.5 text-[10px] font-mono font-bold text-slate-700">
-                    PIN: 1111
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleQuickFill('cashier1@store.local', 'cashier123')}
-                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/80 p-3 text-left transition hover:border-emerald-300 hover:bg-emerald-50/30"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
-                      <UserCheck className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-900">Кассир 1 (POS-терминал)</div>
-                      <div className="text-[10px] text-slate-500">cashier1@store.local</div>
-                    </div>
-                  </div>
-                  <span className="rounded-md bg-white border border-slate-200 px-2 py-0.5 text-[10px] font-mono font-bold text-slate-700">
-                    PIN: 2222
-                  </span>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
