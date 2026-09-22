@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { useTranslation } from '@/stores/language.store';
 import {
   Search,
   Eye,
@@ -18,6 +19,7 @@ import {
 
 export default function SalesPage() {
   const queryClient = useQueryClient();
+  const { t, language } = useTranslation();
   const [search, setSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
@@ -51,7 +53,7 @@ export default function SalesPage() {
       setSelectedOrder(null);
     },
     onError: (err: any) => {
-      setRefundError(err.response?.data?.message || 'Ошибка оформления возврата');
+      setRefundError(err.response?.data?.message || (language === 'uz' ? "Qaytarishda xatolik yuz berdi" : "Ошибка оформления возврата"));
     },
   });
 
@@ -63,49 +65,49 @@ export default function SalesPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          История продаж и чеков
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+          {t.sales.title}
         </h1>
-        <p className="text-sm text-slate-500">
-          Список всех кассовых чеков, просмотр детализации и оформление возвратов
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          {t.sales.subtitle}
         </p>
       </div>
 
       {/* Search Filter */}
-      <div className="flex items-center rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Поиск по номеру чека (например: CHK-)..."
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm outline-none focus:border-blue-500 focus:bg-white"
+            placeholder={language === 'uz' ? "Chek raqami bo'yicha qidiruv (masalan: CHK-)..." : "Поиск по номеру чека (например: CHK-)..."}
+            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800"
           />
         </div>
       </div>
 
       {/* Orders Table */}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50/50 text-xs uppercase text-slate-400 font-semibold">
+            <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-xs uppercase text-slate-400 dark:text-slate-500 font-semibold">
               <tr>
-                <th className="py-3.5 px-4">Номер чека</th>
-                <th className="py-3.5 px-4">Статус</th>
-                <th className="py-3.5 px-4">Оплата</th>
-                <th className="py-3.5 px-4 text-center">Позиций</th>
-                <th className="py-3.5 px-4 text-right">Сумма чека</th>
-                <th className="py-3.5 px-4">Кассир</th>
-                <th className="py-3.5 px-4 text-right">Дата и время</th>
-                <th className="py-3.5 px-4 text-right">Действия</th>
+                <th className="py-3.5 px-4">{t.sales.orderNumber}</th>
+                <th className="py-3.5 px-4">{t.common.status}</th>
+                <th className="py-3.5 px-4">{t.pos.paymentType}</th>
+                <th className="py-3.5 px-4 text-center">{t.sales.itemsCount}</th>
+                <th className="py-3.5 px-4 text-right">{t.common.sum}</th>
+                <th className="py-3.5 px-4">{t.sales.cashier}</th>
+                <th className="py-3.5 px-4 text-right">{language === 'uz' ? 'Sana va vaqt' : 'Дата и время'}</th>
+                <th className="py-3.5 px-4 text-right">{t.common.actions}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-700 dark:text-slate-300">
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-400">
-                    Загрузка чеков...
+                  <td colSpan={8} className="py-8 text-center text-slate-400 dark:text-slate-500">
+                    {t.common.loading}
                   </td>
                 </tr>
               ) : ordersData?.data?.length > 0 ? (
@@ -114,41 +116,43 @@ export default function SalesPage() {
                   const isCard = order.paymentMethod === 'CARD';
 
                   return (
-                    <tr key={order.id} className="hover:bg-slate-50/60 transition">
-                      <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                    <tr key={order.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/50 transition">
+                      <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
                         {order.orderNumber}
                       </td>
                       <td className="py-3 px-4">
                         <span
                           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold ${
                             isRefunded
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-emerald-100 text-emerald-700'
+                              ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50'
+                              : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50'
                           }`}
                         >
-                          {isRefunded ? 'Возврат' : 'Оплачен'}
+                          {isRefunded
+                            ? (language === 'uz' ? 'Qaytarilgan' : 'Возврат')
+                            : (language === 'uz' ? "To'langan" : 'Оплачен')}
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
                           {isCard ? (
-                            <CreditCard className="h-3.5 w-3.5 text-blue-600" />
+                            <CreditCard className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                           ) : (
-                            <Banknote className="h-3.5 w-3.5 text-emerald-600" />
+                            <Banknote className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                           )}
-                          {isCard ? 'Безнал' : 'Наличные'}
+                          {isCard ? t.pos.card : t.pos.cash}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-center font-bold text-slate-900">
+                      <td className="py-3 px-4 text-center font-bold text-slate-900 dark:text-white">
                         {order.items?.length || 0}
                       </td>
-                      <td className="py-3 px-4 text-right font-bold text-slate-900">
+                      <td className="py-3 px-4 text-right font-bold text-slate-900 dark:text-white">
                         {formatCurrency(order.totalAmount)}
                       </td>
-                      <td className="py-3 px-4 text-xs text-slate-600">
-                        {order.cashier?.name || 'Кассир'}
+                      <td className="py-3 px-4 text-xs text-slate-600 dark:text-slate-400">
+                        {order.cashier?.name || t.sales.cashier}
                       </td>
-                      <td className="py-3 px-4 text-right text-xs text-slate-400">
+                      <td className="py-3 px-4 text-right text-xs text-slate-400 dark:text-slate-500">
                         {formatDate(order.createdAt)}
                       </td>
                       <td className="py-3 px-4 text-right">
@@ -156,8 +160,8 @@ export default function SalesPage() {
                           <button
                             type="button"
                             onClick={() => setSelectedOrder(order)}
-                            title="Посмотреть чек"
-                            className="rounded-lg p-1.5 text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition"
+                            title={t.sales.viewReceipt}
+                            className="rounded-lg p-1.5 text-slate-500 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-600 dark:hover:text-blue-400 transition"
                           >
                             <Eye className="h-4 w-4" />
                           </button>
@@ -170,8 +174,8 @@ export default function SalesPage() {
                                 setRefundError(null);
                                 setIsRefundModalOpen(true);
                               }}
-                              title="Оформить возврат"
-                              className="rounded-lg p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 transition"
+                              title={t.sales.refund}
+                              className="rounded-lg p-1.5 text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-950/60 hover:text-red-600 dark:hover:text-red-400 transition"
                             >
                               <RotateCcw className="h-4 w-4" />
                             </button>
@@ -183,8 +187,8 @@ export default function SalesPage() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={8} className="py-10 text-center text-slate-400">
-                    Чеки не найдены
+                  <td colSpan={8} className="py-10 text-center text-slate-400 dark:text-slate-500">
+                    {t.common.notFound}
                   </td>
                 </tr>
               )}
@@ -195,69 +199,69 @@ export default function SalesPage() {
 
       {/* Receipt View Modal */}
       {selectedOrder && !isRefundModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-              <span className="text-sm font-bold text-slate-700 flex items-center gap-1.5">
-                <Receipt className="h-4 w-4 text-blue-600" />
-                Детализация чека
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+              <span className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <Receipt className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                {language === 'uz' ? 'Chek tafsilotlari' : 'Детализация чека'}
               </span>
               <button
                 type="button"
                 onClick={() => setSelectedOrder(null)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Printable Receipt area */}
-            <div id="printable-receipt" className="border border-dashed border-slate-300 rounded-xl p-5 bg-slate-50 font-mono text-xs text-slate-800 space-y-3">
-              <div className="text-center pb-2 border-b border-dashed border-slate-300">
-                <div className="font-bold text-sm uppercase tracking-wider">МАГАЗИН «КОНТРОЛЬ»</div>
-                <div className="text-[10px] text-slate-500 mt-0.5">Добро пожаловать за покупками!</div>
-                <div className="mt-2 font-semibold">ЧЕК № {selectedOrder.orderNumber}</div>
-                <div className="text-[10px] text-slate-500">{formatDate(selectedOrder.createdAt)}</div>
-                <div className="text-[10px] text-slate-500">Кассир: {selectedOrder.cashier?.name}</div>
+            <div id="printable-receipt" className="border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-5 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 space-y-3">
+              <div className="text-center pb-2 border-b border-dashed border-slate-300 dark:border-slate-700">
+                <div className="font-bold text-sm uppercase tracking-wider text-slate-900 dark:text-white">{t.common.appName}</div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{t.common.systemSubtitle}</div>
+                <div className="mt-2 font-semibold text-slate-800 dark:text-slate-200">{t.pos.receiptNo} {selectedOrder.orderNumber}</div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400">{formatDate(selectedOrder.createdAt)}</div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400">{t.pos.cashierLabel}: {selectedOrder.cashier?.name}</div>
               </div>
 
-              <div className="space-y-1.5 py-2 border-b border-dashed border-slate-300">
+              <div className="space-y-1.5 py-2 border-b border-dashed border-slate-300 dark:border-slate-700">
                 {selectedOrder.items?.map((item: any) => (
                   <div key={item.id} className="flex justify-between items-start">
                     <div className="flex-1 pr-2">
-                      <div className="font-semibold text-slate-900">{item.productName}</div>
-                      <div className="text-[10px] text-slate-500">
+                      <div className="font-semibold text-slate-900 dark:text-white">{item.productName}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400">
                         {item.quantity} x {formatCurrency(item.price)}
                       </div>
                     </div>
-                    <div className="font-bold">{formatCurrency(item.total)}</div>
+                    <div className="font-bold text-slate-900 dark:text-white">{formatCurrency(item.total)}</div>
                   </div>
                 ))}
               </div>
 
               <div className="space-y-1 text-xs">
                 {selectedOrder.discountAmount > 0 && (
-                  <div className="flex justify-between text-red-600">
-                    <span>Скидка:</span>
+                  <div className="flex justify-between text-red-600 dark:text-red-400">
+                    <span>{t.pos.discount}:</span>
                     <span>-{formatCurrency(selectedOrder.discountAmount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold text-sm pt-1 border-t border-slate-200">
-                  <span>ИТОГО К ОПЛАТЕ:</span>
-                  <span className="text-blue-600">{formatCurrency(selectedOrder.totalAmount)}</span>
+                <div className="flex justify-between font-bold text-sm pt-1 border-t border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-900 dark:text-white">{t.pos.totalToPay}:</span>
+                  <span className="text-blue-600 dark:text-blue-400">{formatCurrency(selectedOrder.totalAmount)}</span>
                 </div>
-                <div className="flex justify-between text-[11px] text-slate-600 pt-1">
-                  <span>Оплата:</span>
-                  <span>{selectedOrder.paymentMethod === 'CARD' ? 'Банковская карта' : 'Наличные'}</span>
+                <div className="flex justify-between text-[11px] text-slate-600 dark:text-slate-400 pt-1">
+                  <span>{t.pos.paymentType}:</span>
+                  <span>{selectedOrder.paymentMethod === 'CARD' ? t.pos.card : t.pos.cash}</span>
                 </div>
                 {selectedOrder.paymentMethod === 'CASH' && (
                   <>
-                    <div className="flex justify-between text-[11px] text-slate-600">
-                      <span>Внесено наличными:</span>
+                    <div className="flex justify-between text-[11px] text-slate-600 dark:text-slate-400">
+                      <span>{t.pos.cashReceived}:</span>
                       <span>{formatCurrency(selectedOrder.cashReceived)}</span>
                     </div>
-                    <div className="flex justify-between text-[11px] font-bold text-slate-800">
-                      <span>Сдача:</span>
+                    <div className="flex justify-between text-[11px] font-bold text-slate-800 dark:text-slate-200">
+                      <span>{t.pos.change}:</span>
                       <span>{formatCurrency(selectedOrder.changeGiven)}</span>
                     </div>
                   </>
@@ -265,13 +269,13 @@ export default function SalesPage() {
               </div>
 
               {selectedOrder.status === 'REFUNDED' && (
-                <div className="mt-3 rounded-lg bg-red-100 p-2 text-center text-red-700 font-bold text-[11px]">
-                  ВОЗВРАТ ПРОВЕДЕН: {selectedOrder.refundReason || 'По чеку'}
+                <div className="mt-3 rounded-lg bg-red-100 dark:bg-red-950/60 p-2 text-center text-red-700 dark:text-red-400 font-bold text-[11px] border border-red-200 dark:border-red-900/50">
+                  {language === 'uz' ? 'QAYTARISH O\'TKAZILGAN' : 'ВОЗВРАТ ПРОВЕДЕН'}: {selectedOrder.refundReason || 'По чеку'}
                 </div>
               )}
 
-              <div className="text-center pt-2 text-[10px] text-slate-400">
-                Спасибо за покупку! Сохраняйте чек.
+              <div className="text-center pt-2 text-[10px] text-slate-400 dark:text-slate-500">
+                {t.common.copyright}
               </div>
             </div>
 
@@ -279,10 +283,10 @@ export default function SalesPage() {
               <button
                 type="button"
                 onClick={handlePrint}
-                className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition"
+                className="flex items-center gap-2 rounded-xl bg-slate-900 dark:bg-slate-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 dark:hover:bg-slate-700 transition"
               >
                 <Printer className="h-4 w-4" />
-                <span>Распечатать чек</span>
+                <span>{t.pos.printReceipt}</span>
               </button>
             </div>
           </div>
@@ -291,32 +295,32 @@ export default function SalesPage() {
 
       {/* Refund Modal */}
       {isRefundModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <h2 className="text-lg font-bold text-slate-900 mb-2">
-              Оформление возврата
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 shadow-2xl">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+              {t.sales.refund}
             </h2>
-            <p className="text-xs text-slate-500 mb-4">
-              Чек № {selectedOrder?.orderNumber} на сумму {formatCurrency(selectedOrder?.totalAmount)}. Товар будет автоматически возвращен на склад.
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              {t.pos.receiptNo} {selectedOrder?.orderNumber} — {formatCurrency(selectedOrder?.totalAmount)}. {language === 'uz' ? "Mahsulotlar avtomatik ravishda omborga qaytariladi." : "Товар будет автоматически возвращен на склад."}
             </p>
 
             {refundError && (
-              <div className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700 border border-red-200">
+              <div className="mb-4 rounded-xl bg-red-50 dark:bg-red-950/50 p-3 text-sm text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/60">
                 {refundError}
               </div>
             )}
 
             <div className="space-y-3">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
-                Причина возврата *
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                {t.sales.refundReason} *
               </label>
               <textarea
                 required
                 rows={3}
                 value={refundReason}
                 onChange={(e) => setRefundReason(e.target.value)}
-                placeholder="Например: Покупатель вернул товар, не подошел размер / брак упаковки"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm outline-none focus:border-blue-500 focus:bg-white"
+                placeholder={language === 'uz' ? "Masalan: Xaridor tovarini qaytardi, o'lchami to'g'ri kelmadi / brak" : "Например: Покупатель вернул товар, не подошел размер / брак упаковки"}
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800"
               />
             </div>
 
@@ -324,9 +328,9 @@ export default function SalesPage() {
               <button
                 type="button"
                 onClick={() => setIsRefundModalOpen(false)}
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               >
-                Отмена
+                {t.common.cancel}
               </button>
               <button
                 type="button"
@@ -334,7 +338,7 @@ export default function SalesPage() {
                 onClick={() => refundMutation.mutate()}
                 className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition disabled:opacity-50"
               >
-                {refundMutation.isPending ? 'Возврат...' : 'Подтвердить возврат'}
+                {refundMutation.isPending ? t.common.loading : t.sales.refund}
               </button>
             </div>
           </div>
