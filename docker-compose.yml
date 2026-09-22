@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: store_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: storedb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d storedb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: store_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: store_minio
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadminpassword
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  createbuckets:
+    image: minio/mc:latest
+    container_name: store_createbuckets
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set local http://minio:9000 minioadmin minioadminpassword;
+      /usr/bin/mc mb local/store-assets;
+      /usr/bin/mc anonymous set download local/store-assets;
+      exit 0;
+      "
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: store_backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgrespassword@postgres:5432/storedb?schema=public"
+      JWT_ACCESS_SECRET: "super-secret-jwt-access-key-production"
+      JWT_REFRESH_SECRET: "super-secret-jwt-refresh-key-production"
+      PORT: 4000
+      CORS_ORIGINS: "http://localhost,http://localhost:3000,http://127.0.0.1:3000"
+      MINIO_ENDPOINT: "minio"
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: "minioadmin"
+      MINIO_SECRET_KEY: "minioadminpassword"
+      MINIO_BUCKET: "store-assets"
+      MINIO_USE_SSL: "false"
+      MINIO_PUBLIC_URL: "http://localhost:9000/store-assets"
+      REDIS_HOST: "redis"
+      REDIS_PORT: 6379
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: store_frontend
+    restart: always
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:4000/api"
+    ports:
+      - "3000:3000"
+
+  nginx:
+    image: nginx:alpine
+    container_name: store_nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
