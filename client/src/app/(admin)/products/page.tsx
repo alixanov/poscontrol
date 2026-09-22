@@ -262,13 +262,16 @@ export default function ProductsPage() {
                             <img
                               src={p.imageUrl}
                               alt={p.name}
+                              onError={(e) => {
+                                (e.currentTarget as HTMLElement).style.display = 'none';
+                                (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove('hidden');
+                              }}
                               className="h-10 w-10 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0"
                             />
-                          ) : (
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 shrink-0">
-                              <ImageIcon className="h-5 w-5" />
-                            </div>
-                          )}
+                          ) : null}
+                          <div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 shrink-0 ${p.imageUrl ? 'hidden' : ''}`}>
+                            <ImageIcon className="h-5 w-5" />
+                          </div>
                           <div>
                             <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
                             <div className="text-xs text-slate-400 dark:text-slate-500">{p.unit || t.pos.itemCount}</div>

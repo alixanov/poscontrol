@@ -399,13 +399,16 @@ export default function PosPage() {
                           <img
                             src={p.imageUrl}
                             alt={p.name}
+                            onError={(e) => {
+                              (e.currentTarget as HTMLElement).style.display = 'none';
+                              (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove('hidden');
+                            }}
                             className="h-full w-full object-cover transition group-hover:scale-105"
                           />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-slate-300 dark:text-slate-600">
-                            <Store className="h-8 w-8" />
-                          </div>
-                        )}
+                        ) : null}
+                        <div className={`flex h-full w-full items-center justify-center text-slate-300 dark:text-slate-600 ${p.imageUrl ? 'hidden' : ''}`}>
+                          <Store className="h-8 w-8" />
+                        </div>
                         <span className="absolute bottom-1.5 right-1.5 rounded-lg bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
                           {p.stockQuantity} {p.unit || t.pos.itemCount}
                         </span>

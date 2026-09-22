@@ -146,7 +146,7 @@ async function main() {
       stockQuantity: 120,
       minStockAlert: 20,
       unit: 'шт',
-      imageUrl: 'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?w=500&auto=format&fit=crop&q=60',
+      imageUrl: 'https://images.unsplash.com/photo-1559839914-17aae19cec71?w=500&auto=format&fit=crop&q=80',
     },
     {
       name: 'Напиток газированный Cola Classic 0.5л',
@@ -218,7 +218,7 @@ async function main() {
       stockQuantity: 3, // Low stock alert
       minStockAlert: 5,
       unit: 'шт',
-      imageUrl: 'https://images.unsplash.com/photo-1585670270608-b404fb0801b6?w=500&auto=format&fit=crop&q=60',
+      imageUrl: 'https://images.unsplash.com/photo-1585421514738-01798e348b17?w=500&auto=format&fit=crop&q=80',
     },
     {
       name: 'Салфетки влажные антибактериальные 60шт',
