@@ -441,12 +441,13 @@ export default function PosPage() {
 
                         {/* In Cart Indicator */}
                         {inCartQty > 0 && (
-                          <span className={`absolute top-1.5 left-1.5 rounded-lg px-2 py-0.5 text-[10px] font-extrabold shadow-sm backdrop-blur-sm ${
+                          <span className={`absolute top-1.5 left-1.5 rounded-lg px-2 py-0.5 text-[10px] font-extrabold shadow-sm backdrop-blur-sm flex items-center gap-1 ${
                             isMaxInCart
                               ? 'bg-amber-500 text-white'
                               : 'bg-blue-600 text-white'
                           }`}>
-                            {inCartQty} / {p.stockQuantity} {isMaxInCart ? (language === 'uz' ? '• Maks' : '• Макс') : ''}
+                            <span>{inCartQty} / {p.stockQuantity}</span>
+                            {isMaxInCart && <span>{language === 'uz' ? '• Maks' : '• Макс'}</span>}
                           </span>
                         )}
                       </div>
@@ -509,8 +510,8 @@ export default function PosPage() {
           </div>
 
           {/* Stock Warning Banner */}
-          {stockWarning && (
-            <div className="mx-4 mt-3 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-800/80 text-amber-900 dark:text-amber-200 text-xs font-semibold flex items-center justify-between gap-2 shadow-sm">
+          {stockWarning ? (
+            <div key="pos-stock-warning-banner" className="mx-4 mt-3 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-800/80 text-amber-900 dark:text-amber-200 text-xs font-semibold flex items-center justify-between gap-2 shadow-sm">
               <div className="flex items-center gap-2 min-w-0">
                 <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
                 <span className="leading-snug">{stockWarning.message}</span>
@@ -523,7 +524,7 @@ export default function PosPage() {
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
-          )}
+          ) : null}
 
           {/* Cart Items List */}
           <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 p-4">
