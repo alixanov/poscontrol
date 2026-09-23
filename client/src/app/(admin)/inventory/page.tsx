@@ -102,30 +102,49 @@ export default function InventoryPage() {
     const defaultWh = warehouses?.find((w: any) => w.isDefault) || warehouses?.[0];
     const otherWh = warehouses?.find((w: any) => w.id !== defaultWh?.id) || warehouses?.[1] || defaultWh;
 
-    if (type === 'RECEIPT') {
-      setSourceWarehouseId('');
-      setTargetWarehouseId(defaultWh?.id || '');
-    } else if (type === 'WRITE_OFF') {
-      setSourceWarehouseId(defaultWh?.id || '');
-      setTargetWarehouseId('');
-    } else {
-      // TRANSFER
-      setSourceWarehouseId(defaultWh?.id || '');
-      setTargetWarehouseId(otherWh?.id || '');
-    }
+    const srcWhId = type === 'RECEIPT' ? '' : (defaultWh?.id || '');
+    const tgtWhId = type === 'WRITE_OFF' ? '' : (type === 'RECEIPT' ? (defaultWh?.id || '') : (otherWh?.id || ''));
+
+    setSourceWarehouseId(srcWhId);
+    setTargetWarehouseId(tgtWhId);
 
     setProductSearchTerm('');
     setIsProductDropdownOpen(false);
 
-    const firstProduct = productsData?.data?.[0];
+    let firstProduct = productsData?.data?.[0];
+    if (type !== 'RECEIPT' && srcWhId && productsData?.data) {
+      const withStock = productsData.data.find((p: any) => getWarehouseStock(srcWhId, p.id) > 0);
+      if (withStock) firstProduct = withStock;
+    }
+
+    const initialStock = (type !== 'RECEIPT' && srcWhId && firstProduct)
+      ? getWarehouseStock(srcWhId, firstProduct.id)
+      : 1;
+
     setItems([
       {
         productId: firstProduct?.id || '',
-        quantity: 1,
+        quantity: initialStock > 0 ? 1 : 0,
         costPrice: firstProduct?.costPrice || 0,
       },
     ]);
     setIsModalOpen(true);
+  };
+
+  const handleSourceWarehouseChange = (newWhId: string) => {
+    setSourceWarehouseId(newWhId);
+    if (movementType !== 'RECEIPT') {
+      setItems((prevItems) =>
+        prevItems.map((item) => {
+          const avail = getWarehouseStock(newWhId, item.productId);
+          const currentQty = Number(item.quantity) || 0;
+          return {
+            ...item,
+            quantity: avail <= 0 ? 0 : Math.min(currentQty, avail),
+          };
+        })
+      );
+    }
   };
 
   // Filtered Products for Movement Modal Search
@@ -146,16 +165,29 @@ export default function InventoryPage() {
   }, [productsData, productSearchTerm]);
 
   const handleSelectProduct = (prod: any) => {
+    const avail = movementType !== 'RECEIPT' ? getWarehouseStock(sourceWarehouseId, prod.id) : 999999;
+    if (movementType !== 'RECEIPT' && avail <= 0) {
+      setFormError(
+        language === 'uz'
+          ? `"${prod.name}" tovari tanlangan omborda mavjud emas (0 dona)!`
+          : `Товара "${prod.name}" нет в наличии на выбранном складе (0 шт)!`
+      );
+      return;
+    }
+
     const existingIndex = items.findIndex((it) => it.productId === prod.id);
     if (existingIndex !== -1) {
       const updated = [...items];
-      updated[existingIndex].quantity = (Number(updated[existingIndex].quantity) || 0) + 1;
+      const curQty = Number(updated[existingIndex].quantity) || 0;
+      const nextQty = curQty + 1;
+      updated[existingIndex].quantity = movementType !== 'RECEIPT' ? Math.min(nextQty, avail) : nextQty;
       setItems(updated);
     } else {
+      const initialQty = movementType !== 'RECEIPT' ? Math.min(1, avail) : 1;
       if (items.length === 1 && !items[0].productId) {
-        setItems([{ productId: prod.id, quantity: 1, costPrice: prod.costPrice || 0 }]);
+        setItems([{ productId: prod.id, quantity: initialQty, costPrice: prod.costPrice || 0 }]);
       } else {
-        setItems([...items, { productId: prod.id, quantity: 1, costPrice: prod.costPrice || 0 }]);
+        setItems([...items, { productId: prod.id, quantity: initialQty, costPrice: prod.costPrice || 0 }]);
       }
     }
     setProductSearchTerm('');
@@ -172,14 +204,23 @@ export default function InventoryPage() {
   };
 
   const addItemRow = () => {
-    const firstProduct = productsData?.data?.[0];
-    if (firstProduct) {
+    let pickProduct = productsData?.data?.[0];
+    if (movementType !== 'RECEIPT' && sourceWarehouseId && productsData?.data) {
+      const existingIds = new Set(items.map((i) => i.productId));
+      const withStock = productsData.data.find(
+        (p: any) => !existingIds.has(p.id) && getWarehouseStock(sourceWarehouseId, p.id) > 0
+      ) || productsData.data.find((p: any) => !existingIds.has(p.id)) || productsData.data[0];
+      if (withStock) pickProduct = withStock;
+    }
+
+    if (pickProduct) {
+      const avail = movementType !== 'RECEIPT' ? getWarehouseStock(sourceWarehouseId, pickProduct.id) : 1;
       setItems([
         ...items,
         {
-          productId: firstProduct.id,
-          quantity: 1,
-          costPrice: firstProduct.costPrice || 0,
+          productId: pickProduct.id,
+          quantity: avail > 0 ? 1 : 0,
+          costPrice: pickProduct.costPrice || 0,
         },
       ]);
     }
@@ -192,12 +233,46 @@ export default function InventoryPage() {
 
   const updateItemRow = (index: number, field: string, value: any) => {
     const updated = [...items];
-    updated[index] = { ...updated[index], [field]: value };
+    let finalValue = value;
+
+    if (field === 'quantity') {
+      if (value === '' || value === null || value === undefined) {
+        finalValue = '';
+      } else {
+        let num = Number(value);
+        if (isNaN(num)) num = 0;
+        if (num < 0) num = 0;
+
+        if (movementType !== 'RECEIPT') {
+          const avail = getWarehouseStock(sourceWarehouseId, updated[index].productId);
+          // Hard limit: clamp strictly to available stock
+          if (num > avail) {
+            finalValue = avail;
+          } else {
+            finalValue = num;
+          }
+        } else {
+          finalValue = num;
+        }
+      }
+    }
+
+    updated[index] = { ...updated[index], [field]: finalValue };
 
     if (field === 'productId') {
       const prod = productsData?.data?.find((p: any) => p.id === value);
       if (prod) {
         updated[index].costPrice = prod.costPrice || 0;
+      }
+      if (movementType !== 'RECEIPT') {
+        const avail = getWarehouseStock(sourceWarehouseId, value);
+        if (avail <= 0) {
+          updated[index].quantity = 0;
+        } else if (Number(updated[index].quantity) > avail) {
+          updated[index].quantity = avail;
+        } else if (!updated[index].quantity || Number(updated[index].quantity) === 0) {
+          updated[index].quantity = 1;
+        }
       }
     }
     setItems(updated);
@@ -293,6 +368,21 @@ export default function InventoryPage() {
     setFormError(null);
     return true;
   };
+
+  const isFormValid = useMemo(() => {
+    if (items.length === 0) return false;
+    if (movementType === 'TRANSFER' && sourceWarehouseId === targetWarehouseId) return false;
+    for (const it of items) {
+      if (!it.productId) return false;
+      const q = Number(it.quantity);
+      if (isNaN(q) || q <= 0) return false;
+      if (movementType !== 'RECEIPT') {
+        const avail = getWarehouseStock(sourceWarehouseId, it.productId);
+        if (q > avail || avail <= 0) return false;
+      }
+    }
+    return true;
+  }, [items, movementType, sourceWarehouseId, targetWarehouseId, stocksData]);
 
   const handleSubmitMovement = (e: React.FormEvent) => {
     e.preventDefault();
@@ -771,7 +861,7 @@ export default function InventoryPage() {
                     </label>
                     <select
                       value={sourceWarehouseId}
-                      onChange={(e) => setSourceWarehouseId(e.target.value)}
+                      onChange={(e) => handleSourceWarehouseChange(e.target.value)}
                       className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-2.5 px-3 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 font-medium"
                     >
                       {warehouses?.map((w: any) => (
@@ -876,13 +966,18 @@ export default function InventoryPage() {
                         const avail = movementType !== 'RECEIPT'
                           ? getWarehouseStock(sourceWarehouseId, p.id)
                           : p.stockQuantity;
+                        const isZero = movementType !== 'RECEIPT' && avail <= 0;
 
                         return (
                           <button
                             key={p.id}
                             type="button"
                             onClick={() => handleSelectProduct(p)}
-                            className="w-full text-left p-2.5 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center justify-between gap-3 transition"
+                            className={`w-full text-left p-2.5 flex items-center justify-between gap-3 transition ${
+                              isZero
+                                ? 'opacity-60 hover:bg-rose-50/50 dark:hover:bg-rose-950/20'
+                                : 'hover:bg-blue-50 dark:hover:bg-blue-950/40'
+                            }`}
                           >
                             <div className="min-w-0">
                               <div className="font-semibold text-sm text-slate-900 dark:text-white truncate">
@@ -900,8 +995,16 @@ export default function InventoryPage() {
                             </div>
 
                             <div className="text-right shrink-0">
-                              <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                                {movementType === 'RECEIPT' ? (language === 'uz' ? 'Jami:' : 'Всего:') : (language === 'uz' ? 'Omborda:' : 'На складе:')} {avail} {p.unit || t.pos.itemCount}
+                              <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-md ${
+                                isZero
+                                  ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                              }`}>
+                                {movementType === 'RECEIPT'
+                                  ? (language === 'uz' ? 'Jami:' : 'Всего:')
+                                  : isZero
+                                  ? (language === 'uz' ? "Qoldiq yo'q:" : 'Нет на складе:')
+                                  : (language === 'uz' ? 'Omborda:' : 'На складе:')} {avail} {p.unit || t.pos.itemCount}
                               </span>
                               {movementType === 'RECEIPT' && p.costPrice > 0 && (
                                 <div className="text-[11px] text-slate-400 mt-0.5">
@@ -922,102 +1025,147 @@ export default function InventoryPage() {
                   )}
                 </div>
 
-                <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
                   {items.map((row, idx) => {
                     const availableInSource = movementType !== 'RECEIPT'
                       ? getWarehouseStock(sourceWarehouseId, row.productId)
                       : 0;
-                    const isExceeding = (movementType === 'WRITE_OFF' || movementType === 'TRANSFER') && row.quantity > availableInSource;
+                    const isOutOfStock = movementType !== 'RECEIPT' && availableInSource <= 0;
+                    const isExceeding = (movementType === 'WRITE_OFF' || movementType === 'TRANSFER') && (Number(row.quantity) > availableInSource || isOutOfStock);
 
                     return (
                       <div
                         key={idx}
-                        className={`flex flex-col sm:flex-row sm:items-center gap-2 p-3 sm:p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border ${
+                        className={`flex flex-col gap-2 p-3 sm:p-2.5 rounded-xl border transition ${
                           isExceeding
-                            ? 'border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/20'
-                            : 'border-slate-200/80 dark:border-slate-700/80'
+                            ? 'border-rose-300 dark:border-rose-800 bg-rose-50/40 dark:bg-rose-950/20'
+                            : 'border-slate-200/90 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60'
                         }`}
                       >
-                        {/* Product Selector */}
-                        <div className="flex-1 min-w-0">
-                          <label className="sm:hidden text-[11px] font-semibold text-slate-500 mb-1 block">
-                            {t.inventory.product}
-                          </label>
-                          <select
-                            value={row.productId}
-                            onChange={(e) => updateItemRow(idx, 'productId', e.target.value)}
-                            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2 px-2.5 text-sm text-slate-900 dark:text-white outline-none"
-                          >
-                            {productsData?.data?.map((p: any) => {
-                              const avail = movementType !== 'RECEIPT' ? getWarehouseStock(sourceWarehouseId, p.id) : p.stockQuantity;
-                              return (
-                                <option key={p.id} value={p.id}>
-                                  {p.name} ({p.barcode || p.sku}) — {movementType === 'RECEIPT' ? (language === 'uz' ? 'Jami:' : 'Всего:') : (language === 'uz' ? 'Omborda:' : 'На складе:')} {avail} {p.unit || t.pos.itemCount}
-                                </option>
-                              );
-                            })}
-                          </select>
-                        </div>
-
-                        {/* Quantity and Price and Delete */}
-                        <div className="flex items-center gap-2">
-                          {/* Quantity */}
-                          <div className="flex-1 sm:w-24">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                          {/* Product Selector */}
+                          <div className="flex-1 min-w-0">
                             <label className="sm:hidden text-[11px] font-semibold text-slate-500 mb-1 block">
-                              {language === 'uz' ? 'Miqdor' : 'Кол-во'}
+                              {t.inventory.product}
                             </label>
-                            <input
-                              type="number"
-                              min="0.1"
-                              step="any"
-                              value={row.quantity}
-                              onChange={(e) =>
-                                updateItemRow(idx, 'quantity', parseFloat(e.target.value) || 0)
-                              }
-                              placeholder={language === 'uz' ? "Miqdor" : "Кол-во"}
-                              className={`w-full rounded-xl border py-2 px-2 text-sm text-center font-bold text-slate-900 dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                                isExceeding
-                                  ? 'border-rose-400 bg-rose-50 dark:bg-rose-950/40 text-rose-600'
-                                  : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'
-                              }`}
-                            />
+                            <select
+                              value={row.productId}
+                              onChange={(e) => updateItemRow(idx, 'productId', e.target.value)}
+                              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2 px-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 font-medium"
+                            >
+                              {productsData?.data?.map((p: any) => {
+                                const avail = movementType !== 'RECEIPT' ? getWarehouseStock(sourceWarehouseId, p.id) : p.stockQuantity;
+                                const isZeroStock = movementType !== 'RECEIPT' && avail <= 0;
+                                return (
+                                  <option key={p.id} value={p.id}>
+                                    {p.name} ({p.barcode || p.sku}) — {
+                                      movementType === 'RECEIPT'
+                                        ? (language === 'uz' ? `Jami: ${avail}` : `Всего: ${avail}`)
+                                        : isZeroStock
+                                        ? (language === 'uz' ? "⚠️ Qoldiq yo'q (0)" : "⚠️ Нет в наличии (0)")
+                                        : (language === 'uz' ? `Omborda: ${avail}` : `На складе: ${avail}`)
+                                    } {p.unit || t.pos.itemCount}
+                                  </option>
+                                );
+                              })}
+                            </select>
                           </div>
 
-                          {/* Purchase Cost Price (Only for Receipt) */}
-                          {movementType === 'RECEIPT' && (
-                            <div className="flex-1 sm:w-28">
-                              <label className="sm:hidden text-[11px] font-semibold text-slate-500 mb-1 block">
-                                {language === 'uz' ? 'Narx' : 'Цена'}
-                              </label>
-                              <input
-                                type="number"
-                                min="0"
-                                step="any"
-                                value={row.costPrice || ''}
-                                onChange={(e) =>
-                                  updateItemRow(idx, 'costPrice', parseFloat(e.target.value) || 0)
-                                }
-                                placeholder={language === 'uz' ? "Kirim narxi" : "Себестоимость"}
-                                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2 px-2 text-sm text-right text-slate-900 dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                              />
-                            </div>
-                          )}
+                          {/* Quantity, Max Button, Price and Delete */}
+                          <div className="flex items-center gap-2">
+                            {/* Quantity Input + Max Button */}
+                            <div className="flex items-center gap-1.5">
+                              <div>
+                                <label className="sm:hidden text-[11px] font-semibold text-slate-500 mb-1 block">
+                                  {language === 'uz' ? 'Miqdor' : 'Кол-во'}
+                                </label>
+                                <input
+                                  type="number"
+                                  min={isOutOfStock ? "0" : "1"}
+                                  max={movementType !== 'RECEIPT' ? availableInSource : undefined}
+                                  step="any"
+                                  value={row.quantity}
+                                  disabled={isOutOfStock}
+                                  onChange={(e) =>
+                                    updateItemRow(idx, 'quantity', e.target.value)
+                                  }
+                                  placeholder={language === 'uz' ? "Miqdor" : "Кол-во"}
+                                  className={`w-24 sm:w-20 rounded-xl border py-2 px-2 text-sm text-center font-bold text-slate-900 dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition ${
+                                    isExceeding
+                                      ? 'border-rose-400 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400'
+                                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'
+                                  }`}
+                                />
+                              </div>
 
-                          {/* Delete Row Button */}
-                          <button
-                            type="button"
-                            onClick={() => removeItemRow(idx)}
-                            disabled={items.length <= 1}
-                            className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 hover:text-rose-600 dark:hover:text-rose-400 transition disabled:opacity-30"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                              {movementType !== 'RECEIPT' && (
+                                <button
+                                  type="button"
+                                  onClick={() => updateItemRow(idx, 'quantity', availableInSource)}
+                                  disabled={availableInSource <= 0}
+                                  title={language === 'uz' ? "Maksimal qoldiqni kiritish" : "Вставить максимальный остаток"}
+                                  className="px-2 py-2 text-xs font-bold rounded-xl bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/70 border border-blue-200 dark:border-blue-800 disabled:opacity-30 disabled:pointer-events-none transition shrink-0"
+                                >
+                                  Max: {availableInSource}
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Purchase Cost Price (Only for Receipt) */}
+                            {movementType === 'RECEIPT' && (
+                              <div className="flex-1 sm:w-28">
+                                <label className="sm:hidden text-[11px] font-semibold text-slate-500 mb-1 block">
+                                  {language === 'uz' ? 'Narx' : 'Цена'}
+                                </label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="any"
+                                  value={row.costPrice || ''}
+                                  onChange={(e) =>
+                                    updateItemRow(idx, 'costPrice', parseFloat(e.target.value) || 0)
+                                  }
+                                  placeholder={language === 'uz' ? "Kirim narxi" : "Себестоимость"}
+                                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2 px-2 text-sm text-right text-slate-900 dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                              </div>
+                            )}
+
+                            {/* Delete Row Button */}
+                            <button
+                              type="button"
+                              onClick={() => removeItemRow(idx)}
+                              disabled={items.length <= 1}
+                              className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 hover:text-rose-600 dark:hover:text-rose-400 transition disabled:opacity-30"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
                         </div>
 
-                        {/* Inline Stock Error Warning */}
-                        {isExceeding && (
-                          <div className="text-[11px] text-rose-600 dark:text-rose-400 font-semibold px-1">
-                            ⚠️ {language === 'uz' ? `Omborda faqat ${availableInSource} dona mavjud!` : `На складе доступно только ${availableInSource} шт!`}
+                        {/* Stock Guidance Info */}
+                        {movementType !== 'RECEIPT' && (
+                          <div className="text-[11px] font-medium flex items-center justify-between px-1">
+                            {isOutOfStock ? (
+                              <span className="text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
+                                <AlertTriangle className="h-3.5 w-3.5" />
+                                {language === 'uz'
+                                  ? "Omborda ushbu tovar mavjud emas (0 dona). Hisobdan chiqarib yoki ko'chirib bo'lmaydi."
+                                  : "Товара нет на складе (0 шт). Невозможно списать или переместить."}
+                              </span>
+                            ) : (
+                              <span className="text-slate-500 dark:text-slate-400">
+                                {language === 'uz' ? `Omborda mavjud: ` : `На складе доступно: `}
+                                <strong className="text-slate-700 dark:text-slate-200 font-bold">{availableInSource}</strong>
+                                {` ${productsData?.data?.find((p: any) => p.id === row.productId)?.unit || t.pos.itemCount}`}
+                              </span>
+                            )}
+
+                            {isExceeding && !isOutOfStock && (
+                              <span className="text-rose-600 dark:text-rose-400 font-semibold">
+                                ⚠️ {language === 'uz' ? `Maksimal: ${availableInSource} dona` : `Максимум: ${availableInSource} шт`}
+                              </span>
+                            )}
                           </div>
                         )}
                       </div>
@@ -1037,8 +1185,8 @@ export default function InventoryPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={movementMutation.isPending || (movementType === 'TRANSFER' && sourceWarehouseId === targetWarehouseId)}
-                  className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 transition disabled:opacity-50"
+                  disabled={movementMutation.isPending || !isFormValid}
+                  className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {movementMutation.isPending ? t.common.loading : t.inventory.execute}
                 </button>
