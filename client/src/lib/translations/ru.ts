@@ -180,6 +180,17 @@ export const ru = {
     reason: "Причина / Основание",
     items: "Товары",
     execute: "Провести",
+    allWarehouses: "Все склады",
+    addWarehouse: "Добавить склад",
+    totalPositions: "Всего позиций",
+    totalUnits: "Всего единиц",
+    totalCostValue: "Общая стоимость остатков",
+    lowStockPositions: "Товаров на исходе",
+    searchPlaceholder: "Поиск по названию, артикулу или штрихкоду...",
+    movementsSearchPlaceholder: "Поиск по номеру документа или причине...",
+    availableInWarehouse: "Доступно на этом складе",
+    insufficientStock: "Недостаточно товара на складе",
+    warehousesMustDiffer: "Склады должны различаться",
   },
 
   sales: {

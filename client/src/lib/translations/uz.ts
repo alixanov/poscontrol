@@ -180,6 +180,17 @@ export const uz = {
     reason: "Sabab / Asos",
     items: "Tovarlar",
     execute: "O'tkazish",
+    allWarehouses: "Barcha omborlar",
+    addWarehouse: "Yangi ombor",
+    totalPositions: "Jami tovar turlari",
+    totalUnits: "Jami tovar soni",
+    totalCostValue: "Ombor umumiy qiymati",
+    lowStockPositions: "Kam qolgan tovarlar",
+    searchPlaceholder: "Tovar nomi, artikuli yoki shtrix-kodi bo'yicha qidiruv...",
+    movementsSearchPlaceholder: "Hujjat raqami yoki sababi bo'yicha qidiruv...",
+    availableInWarehouse: "Ushbu omborda mavjud",
+    insufficientStock: "Omborda qoldiq yetarli emas",
+    warehousesMustDiffer: "Omborlar bir xil bo'lishi mumkin emas",
   },
 
   sales: {
