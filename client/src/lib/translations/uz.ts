@@ -238,8 +238,8 @@ export const uz = {
   },
 
   audit: {
-    title: "Audit jurnali",
-    subtitle: "Tizimda sodir bo'lgan barcha xavfsizlik va ma'lumotlar o'zgarishlari",
+    title: "Audit va xavfsizlik jurnali",
+    subtitle: "Tizimda sodir bo'lgan barcha xavfsizlik, kirish va ma'lumotlar o'zgarishlari monitoringi",
     allEntities: "Barcha bo'limlar",
     action: "Harakat",
     entity: "Bo'lim / Obyekt",
@@ -248,5 +248,15 @@ export const uz = {
     timestamp: "Vaqt",
     date: "Sana va vaqt",
     details: "Tafsilotlar",
+    totalEvents: "Jami hodisalar",
+    authEvents: "Kirishlar va ruxsat",
+    dataChanges: "Ma'lumotlar o'zgarishi",
+    activeOperators: "Faol operatorlar",
+    securityActive: "Audit nazorati faol",
+    searchPlaceholder: "Harakat, xodim, tafsilot yoki IP bo'yicha qidiruv...",
+    inspectEvent: "Audit hodisasi tafsilotlari",
+    device: "Qurilma / Brauzer",
+    systemEvent: "Tizim hodisasi",
+    allActions: "Barcha harakatlar",
   },
 };
