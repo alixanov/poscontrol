@@ -975,7 +975,7 @@ export default function InventoryPage() {
                                 updateItemRow(idx, 'quantity', parseFloat(e.target.value) || 0)
                               }
                               placeholder={language === 'uz' ? "Miqdor" : "Кол-во"}
-                              className={`w-full rounded-xl border py-2 px-2 text-sm text-center font-bold text-slate-900 dark:text-white outline-none ${
+                              className={`w-full rounded-xl border py-2 px-2 text-sm text-center font-bold text-slate-900 dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                                 isExceeding
                                   ? 'border-rose-400 bg-rose-50 dark:bg-rose-950/40 text-rose-600'
                                   : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'
@@ -998,7 +998,7 @@ export default function InventoryPage() {
                                   updateItemRow(idx, 'costPrice', parseFloat(e.target.value) || 0)
                                 }
                                 placeholder={language === 'uz' ? "Kirim narxi" : "Себестоимость"}
-                                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2 px-2 text-sm text-right text-slate-900 dark:text-white outline-none"
+                                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2 px-2 text-sm text-right text-slate-900 dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
                             </div>
                           )}
