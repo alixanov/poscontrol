@@ -36,7 +36,7 @@ export default function PosPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user, logout } = useAuthStore();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const {
     items: cartItems,
     addItem,
@@ -48,7 +48,18 @@ export default function PosPage() {
     discountAmount,
     getSubtotal,
     getTotal,
+    stockWarning,
+    setStockWarning,
   } = useCartStore();
+
+  useEffect(() => {
+    if (stockWarning) {
+      const timer = setTimeout(() => {
+        setStockWarning(null);
+      }, 4500);
+      return () => clearTimeout(timer);
+    }
+  }, [stockWarning, setStockWarning]);
 
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -137,7 +148,7 @@ export default function PosPage() {
     try {
       const res = await api.get(`/products/barcode/${code.trim()}`);
       if (res.data) {
-        addItem(res.data);
+        addItem(res.data, language);
       }
     } catch (err: any) {
       alert(`Товар со штрихкодом "${code}" не найден`);
@@ -382,16 +393,25 @@ export default function PosPage() {
             ) : productsData?.data?.length > 0 ? (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
                 {productsData.data.map((p: any) => {
+                  const inCartItem = cartItems.find((i) => i.productId === p.id);
+                  const inCartQty = inCartItem?.quantity || 0;
                   const isOutOfStock = p.stockQuantity <= 0;
+                  const isMaxInCart = inCartQty >= p.stockQuantity && p.stockQuantity > 0;
 
                   return (
                     <button
                       key={p.id}
                       type="button"
                       disabled={isOutOfStock}
-                      onClick={() => addItem(p)}
-                      className={`group flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 text-left shadow-sm transition hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 active:scale-[0.98] ${
-                        isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''
+                      onClick={() => addItem(p, language)}
+                      className={`group relative flex flex-col rounded-2xl border bg-white dark:bg-slate-900 p-3 text-left shadow-sm transition active:scale-[0.98] ${
+                        isOutOfStock
+                          ? 'border-slate-200 dark:border-slate-800 opacity-50 cursor-not-allowed'
+                          : isMaxInCart
+                          ? 'border-amber-300 dark:border-amber-700 hover:shadow-md hover:border-amber-400 dark:hover:border-amber-500'
+                          : inCartQty > 0
+                          ? 'border-blue-400 dark:border-blue-600 ring-1 ring-blue-400 dark:ring-blue-600 hover:shadow-md'
+                          : 'border-slate-200 dark:border-slate-800 hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500'
                       }`}
                     >
                       <div className="relative mb-2 aspect-square w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
@@ -409,9 +429,26 @@ export default function PosPage() {
                         <div className={`flex h-full w-full items-center justify-center text-slate-300 dark:text-slate-600 ${p.imageUrl ? 'hidden' : ''}`}>
                           <Store className="h-8 w-8" />
                         </div>
-                        <span className="absolute bottom-1.5 right-1.5 rounded-lg bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
+
+                        {/* Stock Badge */}
+                        <span className={`absolute bottom-1.5 right-1.5 rounded-lg px-1.5 py-0.5 text-[10px] font-bold backdrop-blur-sm ${
+                          isOutOfStock
+                            ? 'bg-rose-600/90 text-white'
+                            : 'bg-black/60 text-white'
+                        }`}>
                           {p.stockQuantity} {p.unit || t.pos.itemCount}
                         </span>
+
+                        {/* In Cart Indicator */}
+                        {inCartQty > 0 && (
+                          <span className={`absolute top-1.5 left-1.5 rounded-lg px-2 py-0.5 text-[10px] font-extrabold shadow-sm backdrop-blur-sm ${
+                            isMaxInCart
+                              ? 'bg-amber-500 text-white'
+                              : 'bg-blue-600 text-white'
+                          }`}>
+                            {inCartQty} / {p.stockQuantity} {isMaxInCart ? (language === 'uz' ? '• Maks' : '• Макс') : ''}
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex-1">
@@ -427,7 +464,11 @@ export default function PosPage() {
                         <span className="text-sm font-extrabold text-blue-600 dark:text-blue-400">
                           {formatCurrency(p.salePrice)}
                         </span>
-                        <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition">
+                        <div className={`flex h-6 w-6 items-center justify-center rounded-lg transition ${
+                          isMaxInCart
+                            ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300'
+                            : 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white'
+                        }`}>
                           <Plus className="h-3.5 w-3.5" />
                         </div>
                       </div>
@@ -467,6 +508,23 @@ export default function PosPage() {
             )}
           </div>
 
+          {/* Stock Warning Banner */}
+          {stockWarning && (
+            <div className="mx-4 mt-3 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-800/80 text-amber-900 dark:text-amber-200 text-xs font-semibold flex items-center justify-between gap-2 shadow-sm">
+              <div className="flex items-center gap-2 min-w-0">
+                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                <span className="leading-snug">{stockWarning.message}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStockWarning(null)}
+                className="p-1 hover:bg-amber-100 dark:hover:bg-amber-900/60 rounded-lg text-amber-700 dark:text-amber-300 shrink-0"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+
           {/* Cart Items List */}
           <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 p-4">
             {cartItems.length === 0 ? (
@@ -478,51 +536,70 @@ export default function PosPage() {
                 </p>
               </div>
             ) : (
-              cartItems.map((item) => (
-                <div key={item.productId} className="py-3 flex items-center justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                      {item.name}
-                    </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      {formatCurrency(item.price)} × {item.quantity} {item.unit || t.pos.itemCount}
-                    </div>
-                  </div>
+              cartItems.map((item) => {
+                const isAtMaxStock = item.quantity >= item.stockQuantity;
 
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => decrementQuantity(item.productId)}
-                      className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
-                    >
-                      <Minus className="h-3 w-3" />
-                    </button>
-                    <span className="w-8 text-center text-xs font-bold text-slate-900 dark:text-white">
-                      {item.quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => incrementQuantity(item.productId)}
-                      className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
-                    >
-                      <Plus className="h-3 w-3" />
-                    </button>
-                  </div>
-
-                  <div className="text-right">
-                    <div className="text-xs font-extrabold text-slate-900 dark:text-white">
-                      {formatCurrency(item.price * item.quantity)}
+                return (
+                  <div key={item.productId} className="py-3 flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          {item.name}
+                        </span>
+                        {isAtMaxStock && (
+                          <span className="shrink-0 text-[9px] font-extrabold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-900/60">
+                            {language === 'uz' ? 'MAKS' : 'МАКС'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1 flex-wrap">
+                        <span>{formatCurrency(item.price)} × {item.quantity} {item.unit || t.pos.itemCount}</span>
+                        <span className="text-slate-300 dark:text-slate-600">•</span>
+                        <span className={isAtMaxStock ? 'text-amber-600 dark:text-amber-400 font-bold' : ''}>
+                          {language === 'uz' ? `Omborda: ${item.stockQuantity}` : `Доступно: ${item.stockQuantity}`}
+                        </span>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item.productId)}
-                      className="text-[10px] text-red-500 hover:underline"
-                    >
-                      {t.common.delete}
-                    </button>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => decrementQuantity(item.productId)}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </button>
+                      <span className={`w-8 text-center text-xs font-bold ${
+                        isAtMaxStock ? 'text-amber-600 dark:text-amber-400 font-extrabold' : 'text-slate-900 dark:text-white'
+                      }`}>
+                        {item.quantity}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={isAtMaxStock}
+                        onClick={() => incrementQuantity(item.productId, language)}
+                        title={isAtMaxStock ? (language === 'uz' ? "Maksimal qoldiqqa yetdi" : "Достигнут максимум на складе") : ""}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="text-xs font-extrabold text-slate-900 dark:text-white">
+                        {formatCurrency(item.price * item.quantity)}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.productId)}
+                        className="text-[10px] text-red-500 hover:underline"
+                      >
+                        {t.common.delete}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 
