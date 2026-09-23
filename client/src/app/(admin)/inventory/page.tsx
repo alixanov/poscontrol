@@ -40,6 +40,8 @@ export default function InventoryPage() {
   const [targetWarehouseId, setTargetWarehouseId] = useState('');
   const [items, setItems] = useState<{ productId: string; quantity: number; costPrice?: number }[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
+  const [productSearchTerm, setProductSearchTerm] = useState('');
+  const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false);
 
   // Add Warehouse Modal State
   const [isWarehouseModalOpen, setIsWarehouseModalOpen] = useState(false);
@@ -112,6 +114,9 @@ export default function InventoryPage() {
       setTargetWarehouseId(otherWh?.id || '');
     }
 
+    setProductSearchTerm('');
+    setIsProductDropdownOpen(false);
+
     const firstProduct = productsData?.data?.[0];
     setItems([
       {
@@ -121,6 +126,49 @@ export default function InventoryPage() {
       },
     ]);
     setIsModalOpen(true);
+  };
+
+  // Filtered Products for Movement Modal Search
+  const searchedProducts = useMemo(() => {
+    if (!productsData?.data || !Array.isArray(productsData.data)) return [];
+    if (!productSearchTerm.trim()) {
+      return productsData.data.slice(0, 8);
+    }
+    const q = productSearchTerm.toLowerCase().trim();
+    return productsData.data
+      .filter((p: any) => {
+        const nameMatch = p.name?.toLowerCase().includes(q);
+        const barcodeMatch = p.barcode?.toLowerCase().includes(q);
+        const skuMatch = p.sku?.toLowerCase().includes(q);
+        return nameMatch || barcodeMatch || skuMatch;
+      })
+      .slice(0, 10);
+  }, [productsData, productSearchTerm]);
+
+  const handleSelectProduct = (prod: any) => {
+    const existingIndex = items.findIndex((it) => it.productId === prod.id);
+    if (existingIndex !== -1) {
+      const updated = [...items];
+      updated[existingIndex].quantity = (Number(updated[existingIndex].quantity) || 0) + 1;
+      setItems(updated);
+    } else {
+      if (items.length === 1 && !items[0].productId) {
+        setItems([{ productId: prod.id, quantity: 1, costPrice: prod.costPrice || 0 }]);
+      } else {
+        setItems([...items, { productId: prod.id, quantity: 1, costPrice: prod.costPrice || 0 }]);
+      }
+    }
+    setProductSearchTerm('');
+    setIsProductDropdownOpen(false);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (searchedProducts.length > 0) {
+        handleSelectProduct(searchedProducts[0]);
+      }
+    }
   };
 
   const addItemRow = () => {
@@ -789,6 +837,89 @@ export default function InventoryPage() {
                     <Plus className="h-3.5 w-3.5" />
                     {language === 'uz' ? "Qator qo'shish" : "Добавить позицию"}
                   </button>
+                </div>
+
+                {/* Quick Search & Add Product Bar */}
+                <div className="relative mb-3">
+                  <div className="relative flex items-center">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <input
+                      type="text"
+                      value={productSearchTerm}
+                      onChange={(e) => {
+                        setProductSearchTerm(e.target.value);
+                        setIsProductDropdownOpen(true);
+                      }}
+                      onFocus={() => setIsProductDropdownOpen(true)}
+                      onKeyDown={handleSearchKeyDown}
+                      placeholder={t.inventory.searchProductToAdd}
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-2.5 pl-10 pr-9 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800 font-medium transition shadow-sm"
+                    />
+                    {productSearchTerm && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProductSearchTerm('');
+                          setIsProductDropdownOpen(false);
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Autocomplete Suggestions Popup */}
+                  {isProductDropdownOpen && searchedProducts.length > 0 && (
+                    <div className="absolute left-0 right-0 top-full mt-1.5 z-50 max-h-56 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl divide-y divide-slate-100 dark:divide-slate-800">
+                      {searchedProducts.map((p: any) => {
+                        const avail = movementType !== 'RECEIPT'
+                          ? getWarehouseStock(sourceWarehouseId, p.id)
+                          : p.stockQuantity;
+
+                        return (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => handleSelectProduct(p)}
+                            className="w-full text-left p-2.5 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center justify-between gap-3 transition"
+                          >
+                            <div className="min-w-0">
+                              <div className="font-semibold text-sm text-slate-900 dark:text-white truncate">
+                                {p.name}
+                              </div>
+                              <div className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-2 mt-0.5">
+                                <span className="font-mono">{p.barcode || p.sku}</span>
+                                {p.category?.name && (
+                                  <>
+                                    <span>•</span>
+                                    <span>{p.category.name}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="text-right shrink-0">
+                              <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                {movementType === 'RECEIPT' ? (language === 'uz' ? 'Jami:' : 'Всего:') : (language === 'uz' ? 'Omborda:' : 'На складе:')} {avail} {p.unit || t.pos.itemCount}
+                              </span>
+                              {movementType === 'RECEIPT' && p.costPrice > 0 && (
+                                <div className="text-[11px] text-slate-400 mt-0.5">
+                                  {formatCurrency(p.costPrice)}
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {isProductDropdownOpen && productSearchTerm && searchedProducts.length === 0 && (
+                    <div className="absolute left-0 right-0 top-full mt-1.5 z-50 p-4 text-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl text-xs text-slate-400">
+                      {language === 'uz' ? "Bunday tovar topilmadi" : "Товар не найден"}
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">

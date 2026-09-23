@@ -191,6 +191,7 @@ export const uz = {
     availableInWarehouse: "Ushbu omborda mavjud",
     insufficientStock: "Omborda qoldiq yetarli emas",
     warehousesMustDiffer: "Omborlar bir xil bo'lishi mumkin emas",
+    searchProductToAdd: "Tovar nomi yoki shtrix-kodi bo'yicha qidirib qo'shish...",
   },
 
   sales: {

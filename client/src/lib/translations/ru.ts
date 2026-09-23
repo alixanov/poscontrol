@@ -191,6 +191,7 @@ export const ru = {
     availableInWarehouse: "Доступно на этом складе",
     insufficientStock: "Недостаточно товара на складе",
     warehousesMustDiffer: "Склады должны различаться",
+    searchProductToAdd: "Поиск и добавление товара по названию или штрихкоду...",
   },
 
   sales: {
