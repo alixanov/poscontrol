@@ -1,0 +1,20 @@
+name: Keep Alive 24/7
+
+on:
+  schedule:
+    # Runs every 10 minutes to prevent Render free-tier sleep
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Application
+        run: |
+          TARGET_URL="${{ secrets.RENDER_APP_URL }}"
+          if [ -z "$TARGET_URL" ]; then
+            TARGET_URL="https://poscontrol.onrender.com"
+          fi
+          echo "💓 Pinging $TARGET_URL to keep it awake..."
+          curl -s -f "$TARGET_URL/api/categories" || curl -s "$TARGET_URL" || true

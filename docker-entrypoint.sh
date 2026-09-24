@@ -27,6 +27,21 @@ PORT=4000 node dist/src/main.js &
 
 sleep 3
 
+# Self keep-alive daemon: ping external URL every 9 minutes so Render never sleeps
+(
+  while true; do
+    sleep 540
+    PING_TARGET="${KEEP_ALIVE_URL:-$RENDER_EXTERNAL_URL}"
+    if [ -z "$PING_TARGET" ] && [ -n "$RENDER_EXTERNAL_HOSTNAME" ]; then
+      PING_TARGET="https://$RENDER_EXTERNAL_HOSTNAME"
+    fi
+    if [ -n "$PING_TARGET" ]; then
+      echo "💓 [Keep-Alive] Pinging $PING_TARGET/api/categories..."
+      wget -q -O /dev/null "$PING_TARGET/api/categories" || true
+    fi
+  done
+) &
+
 echo "🌐 Starting Next.js Web on public port $WEB_PORT..."
 cd /app/client
 exec npx next start -p "$WEB_PORT"
