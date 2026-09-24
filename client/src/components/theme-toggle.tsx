@@ -61,15 +61,15 @@ export function ThemeToggle({ className = '', variant = 'button', showText = tru
       type="button"
       onClick={toggleTheme}
       title={isDark ? lightTitle : darkTitle}
-      className={`relative flex h-9 items-center justify-center gap-2 rounded-xl border border-slate-200/80 bg-white/90 text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:hover:bg-slate-700 active:scale-95 text-xs font-bold ${
-        showText ? 'px-3' : 'w-9'
+      className={`relative flex h-8 sm:h-9 items-center justify-center gap-1.5 rounded-xl border border-slate-200/80 bg-white/90 text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:hover:bg-slate-700 active:scale-95 text-xs font-bold ${
+        showText ? 'w-8 sm:w-auto px-0 sm:px-3' : 'w-8 sm:w-9'
       } ${className}`}
     >
       {isDark ? (
         <>
           <Moon className="h-4 w-4 text-blue-400 shrink-0" />
           {showText && (
-            <span>
+            <span className="hidden sm:inline">
               {language === 'uz' ? 'Tungi rejim' : 'Тёмная тема'}
             </span>
           )}
@@ -78,7 +78,7 @@ export function ThemeToggle({ className = '', variant = 'button', showText = tru
         <>
           <Sun className="h-4 w-4 text-amber-500 shrink-0" />
           {showText && (
-            <span>
+            <span className="hidden sm:inline">
               {language === 'uz' ? 'Kunduzgi' : 'Светлая тема'}
             </span>
           )}

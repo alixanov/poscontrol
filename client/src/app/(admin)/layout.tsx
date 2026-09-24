@@ -34,11 +34,11 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
+    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
       <Sidebar />
-      <div className="flex flex-1 flex-col pl-0 lg:pl-64 min-w-0">
+      <div className="flex flex-1 flex-col pl-0 lg:pl-64 min-w-0 w-full max-w-full overflow-x-hidden">
         <Navbar />
-        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 min-w-0 overflow-x-hidden">{children}</main>
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 min-w-0 w-full max-w-full overflow-x-hidden">{children}</main>
       </div>
     </div>
   );
