@@ -657,11 +657,79 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Content Area: Responsive Cards for Mobile/Tablet (< lg) & Table for Desktop (>= lg) */}
       {activeTab === 'stocks' ? (
-        /* Stocks Table */
+        /* Stocks Presentation */
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Mobile / Tablet Cards View (Visible on < lg screens) */}
+          <div className="lg:hidden p-3 sm:p-4 bg-slate-50/50 dark:bg-slate-950/40">
+            {stocksLoading ? (
+              <div className="py-12 text-center text-slate-400 dark:text-slate-500">
+                {t.common.loading}
+              </div>
+            ) : filteredStocks.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {filteredStocks.map((s: any) => {
+                  const totalCost = (Number(s.quantity) || 0) * (Number(s.product?.costPrice) || 0);
+                  const isLow = s.quantity <= (s.product?.minStockAlert ?? 5);
+
+                  return (
+                    <div
+                      key={s.id}
+                      className="flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-3"
+                    >
+                      {/* Top: Product Name + SKU + Barcode */}
+                      <div>
+                        <h3 className="font-bold text-sm text-slate-900 dark:text-white leading-snug">
+                          {s.product?.name}
+                        </h3>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 mt-1 flex-wrap font-mono">
+                          <span>{s.product?.barcode || '—'}</span>
+                          <span>•</span>
+                          <span>{s.product?.sku}</span>
+                        </div>
+                      </div>
+
+                      {/* Middle: Warehouse + Stock Quantity Badge */}
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-lg">
+                          <Building className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                          <span>{s.warehouse?.name}</span>
+                        </span>
+
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
+                          isLow
+                            ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700'
+                        }`}>
+                          {s.quantity} {s.product?.unit || t.pos.itemCount}
+                        </span>
+                      </div>
+
+                      {/* Bottom: Cost & Total Value */}
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+                        <div className="text-slate-400">
+                          <span>{t.products.costPrice}: </span>
+                          <span className="font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(s.product?.costPrice || 0)}</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[10px] text-slate-400">{t.common.sum}</div>
+                          <div className="font-extrabold text-sm text-slate-900 dark:text-white">{formatCurrency(totalCost)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="py-12 text-center text-slate-400 dark:text-slate-500">
+                {t.common.notFound}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table View (Visible on >= lg screens) */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/50 text-xs uppercase text-slate-400 dark:text-slate-500 font-semibold tracking-wider whitespace-nowrap">
                 <tr>
@@ -734,9 +802,84 @@ export default function InventoryPage() {
           </div>
         </div>
       ) : (
-        /* Movements Table */
+        /* Movements Presentation */
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Mobile / Tablet Cards View (Visible on < lg screens) */}
+          <div className="lg:hidden p-3 sm:p-4 bg-slate-50/50 dark:bg-slate-950/40">
+            {movementsLoading ? (
+              <div className="py-12 text-center text-slate-400 dark:text-slate-500">
+                {t.common.loading}
+              </div>
+            ) : filteredMovements.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {filteredMovements.map((m: any) => {
+                  const isReceipt = m.type === 'RECEIPT';
+                  const isWriteOff = m.type === 'WRITE_OFF';
+
+                  return (
+                    <div
+                      key={m.id}
+                      className="flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-3"
+                    >
+                      {/* Top: Doc Number + Type Badge */}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono font-bold text-sm text-slate-900 dark:text-white">
+                          {m.movementNumber}
+                        </span>
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                            isReceipt
+                              ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50'
+                              : isWriteOff
+                              ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50'
+                              : 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50'
+                          }`}
+                        >
+                          {isReceipt
+                            ? t.inventory.receipt
+                            : isWriteOff
+                            ? t.inventory.writeOff
+                            : t.inventory.transfer}
+                        </span>
+                      </div>
+
+                      {/* Direction: Source / Target */}
+                      <div className="text-xs text-slate-700 dark:text-slate-300 font-semibold bg-slate-100 dark:bg-slate-800/80 p-2 rounded-xl">
+                        {isReceipt && `${language === 'uz' ? 'Qabul qiluvchi ombor' : 'Склад-получатель'}: ${m.targetWarehouse?.name || (language === 'uz' ? 'Asosiy' : 'Основной')}`}
+                        {isWriteOff && `${language === 'uz' ? 'Chiquvchi ombor' : 'Склад списания'}: ${m.sourceWarehouse?.name || (language === 'uz' ? 'Asosiy' : 'Основной')}`}
+                        {!isReceipt && !isWriteOff && `${m.sourceWarehouse?.name} → ${m.targetWarehouse?.name}`}
+                      </div>
+
+                      {/* Reason */}
+                      {m.reason && (
+                        <div className="text-xs text-slate-500 dark:text-slate-400 italic">
+                          "{m.reason}"
+                        </div>
+                      )}
+
+                      {/* Bottom Info: Items count, user, date */}
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+                        <div>
+                          <span className="font-bold text-slate-900 dark:text-white">{m.items?.length || 0}</span>
+                          <span className="text-slate-400 text-[11px] ml-1">{t.inventory.items}</span>
+                          <span className="text-slate-300 dark:text-slate-600 mx-1">•</span>
+                          <span className="text-slate-500 dark:text-slate-400">{m.user?.name || (language === 'uz' ? 'Tizim' : 'Система')}</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">{formatDate(m.createdAt)}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="py-12 text-center text-slate-400 dark:text-slate-500">
+                {t.common.notFound}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table View (Visible on >= lg screens) */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/50 text-xs uppercase text-slate-400 dark:text-slate-500 font-semibold tracking-wider whitespace-nowrap">
                 <tr>

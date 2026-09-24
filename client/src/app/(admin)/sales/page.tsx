@@ -87,9 +87,110 @@ export default function SalesPage() {
         </div>
       </div>
 
-      {/* Orders Table */}
+      {/* Orders Presentation: Responsive Cards for Mobile/Tablet (< lg) & Table for Desktop (>= lg) */}
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile / Tablet Cards View (Visible on < lg screens) */}
+        <div className="lg:hidden p-3 sm:p-4 bg-slate-50/50 dark:bg-slate-950/40">
+          {isLoading ? (
+            <div className="py-12 text-center text-slate-400 dark:text-slate-500">
+              {t.common.loading}
+            </div>
+          ) : ordersData?.data?.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {ordersData.data.map((order: any) => {
+                const isRefunded = order.status === 'REFUNDED';
+                const isCard = order.paymentMethod === 'CARD';
+
+                return (
+                  <div
+                    key={order.id}
+                    className="flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-3"
+                  >
+                    {/* Header: Order Number + Status */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="font-mono font-bold text-sm text-slate-900 dark:text-white">
+                        {order.orderNumber}
+                      </div>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                          isRefunded
+                            ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50'
+                            : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50'
+                        }`}
+                      >
+                        {isRefunded
+                          ? (language === 'uz' ? 'Qaytarilgan' : 'Возврат')
+                          : (language === 'uz' ? "To'langan" : 'Оплачен')}
+                      </span>
+                    </div>
+
+                    {/* Middle: Amount + Payment Type + Cashier */}
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                      <div>
+                        <div className="text-[11px] text-slate-400 dark:text-slate-500">{t.common.sum}</div>
+                        <div className="text-lg font-black text-slate-900 dark:text-white">
+                          {formatCurrency(order.totalAmount)}
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          {order.items?.length || 0} {t.pos.itemCount} • {order.cashier?.name || t.sales.cashier}
+                        </div>
+                      </div>
+
+                      <div className="text-right space-y-1">
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-lg">
+                          {isCard ? (
+                            <CreditCard className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                          ) : (
+                            <Banknote className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                          )}
+                          {isCard ? t.pos.card : t.pos.cash}
+                        </span>
+                        <div className="text-[10px] text-slate-400">
+                          {formatDate(order.createdAt)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom: Action Buttons */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedOrder(order)}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold text-xs hover:bg-blue-100 dark:hover:bg-blue-900 transition"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        <span>{t.sales.viewReceipt}</span>
+                      </button>
+
+                      {!isRefunded && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setRefundReason('');
+                            setRefundError(null);
+                            setIsRefundModalOpen(true);
+                          }}
+                          className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 font-bold text-xs hover:bg-red-100 dark:hover:bg-red-900 transition"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          <span>{t.sales.refund}</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="py-12 text-center text-slate-400 dark:text-slate-500">
+              {t.common.notFound}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Table View (Visible on >= lg screens) */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-xs uppercase text-slate-400 dark:text-slate-500 font-semibold">
               <tr>

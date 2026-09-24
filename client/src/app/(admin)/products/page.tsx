@@ -229,9 +229,117 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* Products Table */}
+      {/* Products Presentation: Responsive Cards for Mobile/Tablet (< lg) & Table for Desktop (>= lg) */}
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile / Tablet Cards View (Visible on < lg screens) */}
+        <div className="lg:hidden p-3 sm:p-4 bg-slate-50/50 dark:bg-slate-950/40">
+          {isLoading ? (
+            <div className="py-12 text-center text-slate-400 dark:text-slate-500">
+              {t.common.loading}
+            </div>
+          ) : productsData?.data?.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {productsData.data.map((p: any) => {
+                const isLow = p.stockQuantity <= p.minStockAlert;
+                return (
+                  <div
+                    key={p.id}
+                    className="flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-3"
+                  >
+                    {/* Top Row: Image + Name + Category */}
+                    <div className="flex items-start gap-3">
+                      {p.imageUrl ? (
+                        <img
+                          src={p.imageUrl}
+                          alt={p.name}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = 'none';
+                            (e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove('hidden');
+                          }}
+                          className="h-12 w-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                        />
+                      ) : null}
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 shrink-0 ${p.imageUrl ? 'hidden' : ''}`}>
+                        <ImageIcon className="h-6 w-6" />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                          {p.name}
+                        </h3>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 mt-0.5 flex-wrap">
+                          <span className="font-mono">{p.barcode}</span>
+                          <span>•</span>
+                          <span>{p.sku}</span>
+                        </div>
+                        <div className="mt-1">
+                          <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                            {p.category?.name || '—'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Middle: Prices & Stock */}
+                    <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+                      <div>
+                        <div className="text-[11px] text-slate-400 dark:text-slate-500">{t.products.price}</div>
+                        <div className="text-base font-extrabold text-blue-600 dark:text-blue-400">
+                          {formatCurrency(p.salePrice)}
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          {t.products.costPrice}: {formatCurrency(p.costPrice)}
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <div className="text-[11px] text-slate-400 dark:text-slate-500 mb-1">{t.products.stock}</div>
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${
+                            isLow
+                              ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50'
+                              : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50'
+                          }`}
+                        >
+                          {isLow && <AlertTriangle className="h-3 w-3" />}
+                          {p.stockQuantity} {p.unit || t.pos.itemCount}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Bottom: Action buttons with large touch target */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEdit(p)}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold text-xs hover:bg-blue-100 dark:hover:bg-blue-900 transition"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                        <span>{t.common.edit}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(p.id, p.name)}
+                        className="flex items-center justify-center p-2 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900 transition"
+                        title={t.common.delete}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="py-12 text-center text-slate-400 dark:text-slate-500">
+              {t.common.notFound}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Table View (Visible on >= lg screens) */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-xs uppercase text-slate-400 dark:text-slate-500 font-semibold">
               <tr>

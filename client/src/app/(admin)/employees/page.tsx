@@ -127,9 +127,104 @@ export default function EmployeesPage() {
         </button>
       </div>
 
-      {/* Staff Table */}
+      {/* Staff Presentation: Responsive Cards for Mobile/Tablet (< lg) & Table for Desktop (>= lg) */}
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile / Tablet Cards View (Visible on < lg screens) */}
+        <div className="lg:hidden p-3 sm:p-4 bg-slate-50/50 dark:bg-slate-950/40">
+          {isLoading ? (
+            <div className="py-12 text-center text-slate-400 dark:text-slate-500">
+              {t.common.loading}
+            </div>
+          ) : users?.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {users.map((u: any) => {
+                const isAdmin = u.role === 'ADMIN';
+
+                return (
+                  <div
+                    key={u.id}
+                    className="flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-3"
+                  >
+                    {/* Header: Name + Status Dot + Role */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+                          {u.name ? u.name[0].toUpperCase() : 'U'}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-slate-900 dark:text-white">{u.name}</span>
+                            <span
+                              className={`h-2.5 w-2.5 rounded-full ${
+                                u.isActive ? 'bg-emerald-500 ring-2 ring-emerald-500/20' : 'bg-slate-300 dark:bg-slate-600'
+                              }`}
+                              title={u.isActive ? t.employees.active : t.employees.inactive}
+                            />
+                          </div>
+                          <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{u.email}</div>
+                        </div>
+                      </div>
+
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold shrink-0 ${
+                          isAdmin
+                            ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/50'
+                            : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50'
+                        }`}
+                      >
+                        {isAdmin ? <ShieldCheck className="h-3.5 w-3.5" /> : <UserCheck className="h-3.5 w-3.5" />}
+                        {isAdmin ? t.employees.roleAdmin : t.employees.roleCashier}
+                      </span>
+                    </div>
+
+                    {/* Middle: PIN & Sales count */}
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+                      <div>
+                        <span className="text-slate-400">{t.employees.pin}: </span>
+                        <span className="font-mono font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                          {u.pinCode || '—'}
+                        </span>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="text-slate-400">{language === 'uz' ? 'Savdolar soni' : 'Продаж'}: </span>
+                        <span className="font-bold text-slate-900 dark:text-white">{u._count?.orders || 0}</span>
+                      </div>
+                    </div>
+
+                    {/* Bottom: Action Buttons */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(u)}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold text-xs hover:bg-blue-100 dark:hover:bg-blue-900 transition"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                        <span>{t.common.edit}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(u.id, u.name)}
+                        className="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900 transition"
+                        title={t.employees.inactive}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="py-12 text-center text-slate-400 dark:text-slate-500">
+              {t.common.notFound}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Table View (Visible on >= lg screens) */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-xs uppercase text-slate-400 dark:text-slate-500 font-semibold">
               <tr>
@@ -218,7 +313,7 @@ export default function EmployeesPage() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-slate-400 dark:text-slate-500">
+                  <td colSpan={7} className="py-8 text-center text-slate-400 dark:text-slate-500">
                     {t.common.notFound}
                   </td>
                 </tr>

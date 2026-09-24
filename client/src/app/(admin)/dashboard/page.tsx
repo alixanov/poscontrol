@@ -80,82 +80,82 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Today Revenue */}
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {t.dashboard.todayRevenue}
             </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
-              <DollarSign className="h-5 w-5" />
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+              <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="mt-3 sm:mt-4">
+            <div className="text-base sm:text-2xl font-bold text-slate-900 dark:text-white truncate">
               {formatCurrency(summary?.todayRevenue)}
             </div>
-            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+            <p className="mt-1 text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 truncate">
               {t.common.total}: {formatCurrency(summary?.totalRevenue)}
             </p>
           </div>
         </div>
 
         {/* Today Profit */}
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {t.dashboard.revenue}
             </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
-              <TrendingUp className="h-5 w-5" />
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+          <div className="mt-3 sm:mt-4">
+            <div className="text-base sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 truncate">
               {formatCurrency(summary?.todayProfit)}
             </div>
-            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+            <p className="mt-1 text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 truncate">
               {formatCurrency(summary?.todayRevenue)} - {formatCurrency((summary?.todayRevenue || 0) - (summary?.todayProfit || 0))}
             </p>
           </div>
         </div>
 
         {/* Average Receipt */}
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {t.dashboard.averageCheck}
             </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400">
-              <Receipt className="h-5 w-5" />
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400">
+              <Receipt className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="mt-3 sm:mt-4">
+            <div className="text-base sm:text-2xl font-bold text-slate-900 dark:text-white truncate">
               {formatCurrency(summary?.averageReceipt)}
             </div>
-            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+            <p className="mt-1 text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 truncate">
               {t.dashboard.todayOrders}: {summary?.todayOrdersCount || 0}
             </p>
           </div>
         </div>
 
         {/* Low Stock Warning */}
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {t.dashboard.lowStockCount}
             </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
-              <AlertTriangle className="h-5 w-5" />
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+          <div className="mt-3 sm:mt-4">
+            <div className="text-base sm:text-2xl font-bold text-amber-600 dark:text-amber-400 truncate">
               {summary?.lowStockProducts || 0}
             </div>
-            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+            <p className="mt-1 text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 truncate">
               &le; 5 {t.pos.itemCount}
             </p>
           </div>
@@ -266,15 +266,48 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Top 5 Products Table */}
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+      {/* Top 5 Products Section */}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="text-base font-bold text-slate-900 dark:text-white">{t.dashboard.topProducts}</h2>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile View (< sm) */}
+        <div className="block sm:hidden divide-y divide-slate-100 dark:divide-slate-800">
+          {topProducts && topProducts.length > 0 ? (
+            topProducts.map((p: any, index: number) => (
+              <div key={p.productId} className="py-3 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300">
+                    {index + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                      {p.name}
+                    </p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">
+                      {p.soldQuantity} {t.pos.itemCount}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">
+                    {formatCurrency(p.totalRevenue)}
+                  </span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="py-6 text-center text-slate-400 dark:text-slate-500 text-sm">
+              {t.dashboard.noSalesYet}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop / Tablet Table View (>= sm) */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200 dark:border-slate-800 text-xs uppercase text-slate-400 dark:text-slate-500 font-semibold">
               <tr>
