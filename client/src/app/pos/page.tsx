@@ -64,6 +64,7 @@ export default function PosPage() {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [barcodeInput, setBarcodeInput] = useState('');
+  const [mobileTab, setMobileTab] = useState<'catalog' | 'cart'>('catalog');
 
   // Shift Modals
   const [isOpenShiftModalOpen, setIsOpenShiftModalOpen] = useState(false);
@@ -244,28 +245,28 @@ export default function PosPage() {
   return (
     <div className="flex h-screen w-full flex-col bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden select-none transition-colors duration-200">
       {/* Top POS Header */}
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-500/20">
-            <Store className="h-6 w-6" />
+      <header className="flex min-h-16 shrink-0 flex-wrap items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 sm:px-6 py-2 sm:py-0 shadow-sm gap-2">
+        <div className="flex items-center gap-2.5 sm:gap-4">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-500/20 shrink-0">
+            <Store className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-slate-900 dark:text-white">{t.pos.title}</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white leading-tight">{t.pos.title}</span>
               {activeShift ? (
-                <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
                   {t.pos.shiftActive} (№{activeShift.shiftNumber})
                 </span>
               ) : (
-                <span className="rounded-full bg-red-100 dark:bg-red-950/70 border border-red-200 dark:border-red-800 px-2.5 py-0.5 text-xs font-bold text-red-700 dark:text-red-400">
+                <span className="rounded-full bg-red-100 dark:bg-red-950/70 border border-red-200 dark:border-red-800 px-2 py-0.5 text-[11px] font-bold text-red-700 dark:text-red-400">
                   {t.pos.shiftClosed}
                 </span>
               )}
             </div>
-            <div className="text-xs text-slate-400 dark:text-slate-500">
+            <div className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 mt-0.5">
               {t.pos.cashierLabel}: <strong className="text-slate-700 dark:text-slate-300">{user?.name}</strong>
               {activeShift && (
-                <span className="ml-2">
+                <span className="ml-1.5 sm:ml-2">
                   • <strong className="text-emerald-700 dark:text-emerald-400 font-mono">
                     {formatCurrency(activeShift.expectedCash)}
                   </strong>
@@ -276,7 +277,7 @@ export default function PosPage() {
         </div>
 
         {/* Action Controls in Header */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <ThemeToggle />
           <LanguageSwitcher showIcon />
 
@@ -284,7 +285,7 @@ export default function PosPage() {
             <button
               type="button"
               onClick={() => setIsOpenShiftModalOpen(true)}
-              className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow hover:bg-emerald-700 transition"
+              className="rounded-xl bg-emerald-600 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white shadow hover:bg-emerald-700 transition"
             >
               {t.pos.openShift}
             </button>
@@ -295,7 +296,7 @@ export default function PosPage() {
                 setActualCash(activeShift.expectedCash || 0);
                 setIsCloseShiftModalOpen(true);
               }}
-              className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-700 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-900 transition"
+              className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-700 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-900 transition"
             >
               {t.pos.closeShift}
             </button>
@@ -305,10 +306,10 @@ export default function PosPage() {
             <button
               type="button"
               onClick={() => router.push('/dashboard')}
-              className="flex items-center gap-1.5 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 px-3.5 py-2 text-xs font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900 transition"
+              className="flex items-center gap-1 sm:gap-1.5 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900 transition"
             >
               <Shield className="h-4 w-4" />
-              <span>{t.pos.adminReturn}</span>
+              <span className="hidden sm:inline">{t.pos.adminReturn}</span>
             </button>
           )}
 
@@ -319,19 +320,59 @@ export default function PosPage() {
               router.push('/login');
             }}
             title={t.nav.logout}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+            className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
           >
             <LogOut className="h-4 w-4" />
           </button>
         </div>
       </header>
 
-      {/* Main Working Area: Split 65% Catalog / 35% Active Cart */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* Mobile Mode Tab Switcher (Visible on < lg screens) */}
+      <div className="flex lg:hidden shrink-0 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 gap-2">
+        <button
+          type="button"
+          onClick={() => setMobileTab('catalog')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition ${
+            mobileTab === 'catalog'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+          }`}
+        >
+          <Store className="h-4 w-4" />
+          <span>{language === 'uz' ? 'Katalog' : 'Каталог'}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileTab('cart')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition relative ${
+            mobileTab === 'cart'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+          }`}
+        >
+          <ShoppingCart className="h-4 w-4" />
+          <span>{language === 'uz' ? 'Savatcha' : 'Корзина'}</span>
+          {cartItems.length > 0 && (
+            <span className="rounded-full bg-emerald-500 text-white px-1.5 py-0.2 text-[10px] font-extrabold ml-1">
+              {cartItems.reduce((sum, i) => sum + i.quantity, 0)}
+            </span>
+          )}
+          {cartItems.length > 0 && (
+            <span className="font-mono text-[11px] ml-1 opacity-90 hidden sm:inline">
+              • {formatCurrency(getTotal())}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Main Working Area: Split 65% Catalog / 35% Active Cart on desktop, tabbed on mobile */}
+      <div className="flex flex-1 overflow-hidden relative">
         {/* Left Column: Fast Product Search & Grid */}
-        <div className="flex flex-1 flex-col border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 p-4 overflow-hidden">
+        <div className={`flex flex-1 flex-col border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 p-2.5 sm:p-4 overflow-hidden ${
+          mobileTab === 'cart' ? 'hidden lg:flex' : 'flex'
+        }`}>
           {/* Barcode scanner input + Text search */}
-          <div className="mb-4 flex items-center gap-3">
+          <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             <form onSubmit={handleBarcodeFormSubmit} className="relative flex-1">
               <Barcode className="absolute left-3.5 top-3 h-5 w-5 text-blue-600 dark:text-blue-400" />
               <input
@@ -483,13 +524,48 @@ export default function PosPage() {
               </div>
             )}
           </div>
+
+          {/* Mobile Quick Cart Floating Bar */}
+          {cartItems.length > 0 && mobileTab === 'catalog' && (
+            <div className="lg:hidden absolute bottom-3 left-3 right-3 z-30">
+              <button
+                type="button"
+                onClick={() => setMobileTab('cart')}
+                className="w-full flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-blue-600 text-white shadow-xl shadow-blue-600/30 font-bold active:scale-[0.99] transition"
+              >
+                <div className="flex items-center gap-2 text-sm">
+                  <ShoppingCart className="h-5 w-5" />
+                  <span>
+                    {cartItems.reduce((sum, i) => sum + i.quantity, 0)} {language === 'uz' ? 'ta tovar' : 'товаров'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-mono font-extrabold">{formatCurrency(getTotal())}</span>
+                  <span className="text-xs bg-white/20 rounded-lg px-2.5 py-1 flex items-center gap-1">
+                    {language === 'uz' ? 'To‘lov' : 'К оплате'} <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
+                </div>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Right Column: Active Cart & Checkout */}
-        <div className="flex w-96 shrink-0 flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-xl">
+        <div className={`flex flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-xl ${
+          mobileTab === 'catalog' ? 'hidden lg:flex w-full lg:w-96 shrink-0' : 'flex w-full lg:w-96 shrink-0'
+        }`}>
           {/* Cart Header */}
-          <div className="flex h-14 items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5">
+          <div className="flex h-14 items-center justify-between border-b border-slate-200 dark:border-slate-800 px-4 sm:px-5">
             <div className="flex items-center gap-2">
+              {/* Mobile Return to Catalog Button */}
+              <button
+                type="button"
+                onClick={() => setMobileTab('catalog')}
+                className="lg:hidden flex items-center justify-center h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 mr-1 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                title={language === 'uz' ? 'Katalogga qaytish' : 'Вернуться в каталог'}
+              >
+                <ArrowRight className="h-4 w-4 rotate-180" />
+              </button>
               <ShoppingCart className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               <span className="font-bold text-slate-900 dark:text-white">{t.pos.cartTitle}</span>
               <span className="rounded-full bg-blue-100 dark:bg-blue-950/70 border border-blue-200 dark:border-blue-800 px-2 py-0.5 text-xs font-bold text-blue-700 dark:text-blue-300">
@@ -653,8 +729,8 @@ export default function PosPage() {
 
       {/* MODAL 1: Payment Checkout Modal */}
       {isPaymentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-100 dark:border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-3 sm:p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t.pos.totalToPay}</h2>
               <button
@@ -782,8 +858,8 @@ export default function PosPage() {
 
       {/* MODAL 2: Printable Receipt Modal (After successful sale) */}
       {lastOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-100 dark:border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-3 sm:p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
               <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
                 <CheckCircle2 className="h-5 w-5" />
@@ -883,8 +959,8 @@ export default function PosPage() {
 
       {/* MODAL 3: Open Shift Modal */}
       {isOpenShiftModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-100 dark:border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-3 sm:p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800 max-h-[92vh] overflow-y-auto">
             <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{t.pos.openShift}</h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
               {t.pos.startingCashLabel}
@@ -925,8 +1001,8 @@ export default function PosPage() {
 
       {/* MODAL 4: Close Shift Modal */}
       {isCloseShiftModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-100 dark:border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-3 sm:p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800 max-h-[92vh] overflow-y-auto">
             <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{t.pos.closeShift}</h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
               {t.pos.actualCashLabel}

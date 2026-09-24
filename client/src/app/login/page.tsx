@@ -99,8 +99,8 @@ export default function LoginPage() {
 
   return (
     <div className="relative flex min-h-screen w-full bg-gradient-to-br from-sky-50/60 via-slate-50/80 to-blue-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden transition-colors duration-200">
-      {/* Top Floating Language & Theme Controls */}
-      <div className="absolute right-6 top-6 z-30 hidden sm:flex items-center gap-2.5">
+      {/* Top Floating Language & Theme Controls on Large Screens */}
+      <div className="absolute right-6 top-6 z-30 hidden lg:flex items-center gap-2.5">
         <ThemeToggle />
         <LanguageSwitcher showIcon />
       </div>
