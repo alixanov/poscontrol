@@ -1,7 +1,24 @@
 import axios from 'axios';
 
+export const getApiBaseUrl = () => {
+  let url = process.env.NEXT_PUBLIC_API_URL;
+  if (!url) {
+    if (typeof window !== 'undefined') {
+      return '/api';
+    }
+    return 'http://localhost:4000/api';
+  }
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `https://${url}`;
+  }
+  if (!url.endsWith('/api')) {
+    url = `${url.replace(/\/+$/, '')}/api`;
+  }
+  return url;
+};
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api',
+  baseURL: getApiBaseUrl(),
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -31,7 +48,7 @@ api.interceptors.response.use(
         if (refreshToken) {
           try {
             const res = await axios.post(
-              `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/auth/refresh`,
+              `${getApiBaseUrl()}/auth/refresh`,
               { refreshToken },
             );
             localStorage.setItem('accessToken', res.data.accessToken);
