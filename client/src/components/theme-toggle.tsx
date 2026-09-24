@@ -8,33 +8,34 @@ import { Sun, Moon } from 'lucide-react';
 interface ThemeToggleProps {
   className?: string;
   variant?: 'button' | 'segmented';
+  showText?: boolean;
 }
 
-export function ThemeToggle({ className = '', variant = 'button' }: ThemeToggleProps) {
+export function ThemeToggle({ className = '', variant = 'button', showText = true }: ThemeToggleProps) {
   const { theme, toggleTheme, setTheme } = useThemeStore();
   const { language } = useTranslation();
 
   const isDark = theme === 'dark';
 
-  const lightTitle = language === 'uz' ? 'Kunduzgi rejim (Kun)' : 'Дневной режим (День)';
-  const darkTitle = language === 'uz' ? 'Tungi rejim (Tun)' : 'Ночной режим (Ночь)';
+  const lightTitle = language === 'uz' ? 'Kunduzgi rejim (Light mode)' : 'Светлая тема (Light mode)';
+  const darkTitle = language === 'uz' ? 'Tungi rejim (Dark mode)' : 'Тёмная тема (Dark mode)';
 
   if (variant === 'segmented') {
     return (
       <div
-        className={`inline-flex items-center rounded-xl bg-slate-100 p-1 border border-slate-200/80 shadow-sm backdrop-blur-sm dark:bg-slate-800 dark:border-slate-700 ${className}`}
+        className={`inline-flex items-center rounded-xl bg-slate-100/90 dark:bg-slate-800/90 p-1 border border-slate-200/80 dark:border-slate-700/80 shadow-sm backdrop-blur-sm ${className}`}
       >
         <button
           type="button"
           onClick={() => setTheme('light')}
           className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition ${
             !isDark
-              ? 'bg-white text-amber-500 shadow-sm dark:bg-slate-700'
-              : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
+              ? 'bg-white dark:bg-slate-900 text-amber-500 shadow-sm'
+              : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
           }`}
           title={lightTitle}
         >
-          <Sun className="h-3.5 w-3.5" />
+          <Sun className="h-3.5 w-3.5 text-amber-500" />
           <span>{language === 'uz' ? 'Kun' : 'День'}</span>
         </button>
 
@@ -43,12 +44,12 @@ export function ThemeToggle({ className = '', variant = 'button' }: ThemeToggleP
           onClick={() => setTheme('dark')}
           className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition ${
             isDark
-              ? 'bg-white text-blue-500 shadow-sm dark:bg-slate-700 dark:text-blue-400'
-              : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
+              ? 'bg-white dark:bg-slate-900 text-blue-500 dark:text-blue-400 shadow-sm'
+              : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
           }`}
           title={darkTitle}
         >
-          <Moon className="h-3.5 w-3.5" />
+          <Moon className="h-3.5 w-3.5 text-blue-400" />
           <span>{language === 'uz' ? 'Tun' : 'Ночь'}</span>
         </button>
       </div>
@@ -60,12 +61,28 @@ export function ThemeToggle({ className = '', variant = 'button' }: ThemeToggleP
       type="button"
       onClick={toggleTheme}
       title={isDark ? lightTitle : darkTitle}
-      className={`relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white/90 text-slate-600 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-300 dark:hover:bg-slate-700 active:scale-95 ${className}`}
+      className={`relative flex h-9 items-center justify-center gap-2 rounded-xl border border-slate-200/80 bg-white/90 text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:hover:bg-slate-700 active:scale-95 text-xs font-bold ${
+        showText ? 'px-3' : 'w-9'
+      } ${className}`}
     >
       {isDark ? (
-        <Sun className="h-4 w-4 text-amber-400 transition-transform duration-200 rotate-0 hover:rotate-45" />
+        <>
+          <Moon className="h-4 w-4 text-blue-400 shrink-0" />
+          {showText && (
+            <span>
+              {language === 'uz' ? 'Tungi rejim' : 'Тёмная тема'}
+            </span>
+          )}
+        </>
       ) : (
-        <Moon className="h-4 w-4 text-slate-600 transition-transform duration-200 -rotate-12 hover:rotate-0" />
+        <>
+          <Sun className="h-4 w-4 text-amber-500 shrink-0" />
+          {showText && (
+            <span>
+              {language === 'uz' ? 'Kunduzgi' : 'Светлая тема'}
+            </span>
+          )}
+        </>
       )}
     </button>
   );
