@@ -17,6 +17,9 @@ import {
   CheckCircle2,
   X,
   Filter,
+  FolderTree,
+  Tag,
+  Check,
 } from 'lucide-react';
 
 export default function ProductsPage() {
@@ -29,6 +32,18 @@ export default function ProductsPage() {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+
+  // Quick Category State (inside Product Modal)
+  const [isQuickCategoryOpen, setIsQuickCategoryOpen] = useState(false);
+  const [quickCategoryName, setQuickCategoryName] = useState('');
+  const [creatingQuickCategory, setCreatingQuickCategory] = useState(false);
+
+  // Full Category Management Modal State
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<any | null>(null);
+  const [categoryFormName, setCategoryFormName] = useState('');
+  const [isSavingCategory, setIsSavingCategory] = useState(false);
+  const [categoryFormError, setCategoryFormError] = useState<string | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -54,6 +69,65 @@ export default function ProductsPage() {
       return res.data;
     },
   });
+
+  // Quick Category Creator
+  const handleCreateQuickCategory = async () => {
+    if (!quickCategoryName.trim()) return;
+    setCreatingQuickCategory(true);
+    try {
+      const res = await api.post('/categories', { name: quickCategoryName.trim() });
+      await queryClient.invalidateQueries({ queryKey: ['categories'] });
+      setFormData((prev) => ({ ...prev, categoryId: res.data.id }));
+      setQuickCategoryName('');
+      setIsQuickCategoryOpen(false);
+    } catch (err: any) {
+      alert(err.response?.data?.message || t.common.error);
+    } finally {
+      setCreatingQuickCategory(false);
+    }
+  };
+
+  // Category Manager: Save / Update
+  const handleSaveCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!categoryFormName.trim()) return;
+    setIsSavingCategory(true);
+    setCategoryFormError(null);
+    try {
+      if (editingCategory) {
+        await api.patch(`/categories/${editingCategory.id}`, { name: categoryFormName.trim() });
+      } else {
+        await api.post('/categories', { name: categoryFormName.trim() });
+      }
+      await queryClient.invalidateQueries({ queryKey: ['categories'] });
+      setCategoryFormName('');
+      setEditingCategory(null);
+    } catch (err: any) {
+      setCategoryFormError(err.response?.data?.message || t.common.error);
+    } finally {
+      setIsSavingCategory(false);
+    }
+  };
+
+  // Category Manager: Delete
+  const handleDeleteCategory = async (id: string, name: string, count: number) => {
+    const msg =
+      count > 0
+        ? `"${name}" kategoriyasida ${count} ta tovar mavjud. Baribir o'chirmoqchimisiz?`
+        : `"${name}" kategoriyasini o'chirishni tasdiqlaysizmi?`;
+    if (confirm(msg)) {
+      try {
+        await api.delete(`/categories/${id}`);
+        await queryClient.invalidateQueries({ queryKey: ['categories'] });
+        await queryClient.invalidateQueries({ queryKey: ['products'] });
+        if (formData.categoryId === id) {
+          setFormData((prev) => ({ ...prev, categoryId: '' }));
+        }
+      } catch (err: any) {
+        alert(err.response?.data?.message || t.common.error);
+      }
+    }
+  };
 
   // Fetch Products
   const { data: productsData, isLoading } = useQuery({
@@ -177,14 +251,35 @@ export default function ProductsPage() {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenCreate}
-          className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 transition"
-        >
-          <Plus className="h-4 w-4" />
-          <span>{t.products.addProduct}</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => {
+              setCategoryFormName('');
+              setEditingCategory(null);
+              setCategoryFormError(null);
+              setIsCategoryModalOpen(true);
+            }}
+            className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition shadow-xs"
+          >
+            <FolderTree className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <span>{t.products.manageCategories}</span>
+            {categories && categories.length > 0 && (
+              <span className="rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-xs font-bold text-slate-600 dark:text-slate-300">
+                {categories.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 transition"
+          >
+            <Plus className="h-4 w-4" />
+            <span>{t.products.addProduct}</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters Bar */}
@@ -520,15 +615,52 @@ export default function ProductsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
-                    {t.products.category}
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                      {t.products.category}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsQuickCategoryOpen(!isQuickCategoryOpen)}
+                      className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1 transition"
+                    >
+                      <Plus className="h-3 w-3" />
+                      <span>{isQuickCategoryOpen ? t.common.cancel : t.products.addCategory}</span>
+                    </button>
+                  </div>
+
+                  {isQuickCategoryOpen && (
+                    <div className="mb-2 p-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={quickCategoryName}
+                        onChange={(e) => setQuickCategoryName(e.target.value)}
+                        placeholder={t.products.newCategoryName}
+                        className="flex-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-blue-500"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleCreateQuickCategory();
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        disabled={creatingQuickCategory || !quickCategoryName.trim()}
+                        onClick={handleCreateQuickCategory}
+                        className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold disabled:opacity-50 transition shrink-0"
+                      >
+                        {creatingQuickCategory ? t.common.loading : t.common.add}
+                      </button>
+                    </div>
+                  )}
+
                   <select
                     value={formData.categoryId}
                     onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                     className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-2.5 px-3 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800"
                   >
-                    <option value="">{t.products.selectCategory}</option>
+                    <option value="">{t.products.noCategory}</option>
                     {categories?.map((c: any) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
@@ -666,6 +798,163 @@ export default function ProductsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Category Management Modal */}
+      {isCategoryModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-3 sm:p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                  <FolderTree className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                    {t.products.manageCategories}
+                  </h2>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">
+                    {categories?.length || 0} ta kategoriya
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCategoryModalOpen(false);
+                  setEditingCategory(null);
+                  setCategoryFormName('');
+                  setCategoryFormError(null);
+                }}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Add / Edit Form */}
+            <form onSubmit={handleSaveCategory} className="mb-4">
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200/80 dark:border-slate-700/80 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {editingCategory ? `${t.common.edit}: "${editingCategory.name}"` : t.products.addCategory}
+                  </span>
+                  {editingCategory && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingCategory(null);
+                        setCategoryFormName('');
+                      }}
+                      className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                      {t.common.cancel}
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    required
+                    value={categoryFormName}
+                    onChange={(e) => setCategoryFormName(e.target.value)}
+                    placeholder={t.products.newCategoryName}
+                    className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSavingCategory || !categoryFormName.trim()}
+                    className="rounded-xl bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-xs transition disabled:opacity-50 flex items-center gap-1.5 shrink-0"
+                  >
+                    {isSavingCategory ? (
+                      t.common.loading
+                    ) : editingCategory ? (
+                      <>
+                        <Check className="h-4 w-4" />
+                        <span>{t.common.save}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4" />
+                        <span>{t.common.add}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {categoryFormError && (
+                  <p className="text-xs text-red-500 font-medium">{categoryFormError}</p>
+                )}
+              </div>
+            </form>
+
+            {/* Categories List */}
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-64">
+              {categories && categories.length > 0 ? (
+                categories.map((c: any) => (
+                  <div
+                    key={c.id}
+                    className="flex items-center justify-between p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 hover:bg-slate-100/60 dark:hover:bg-slate-800 transition"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                        <Tag className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-sm font-semibold text-slate-900 dark:text-white block truncate">
+                          {c.name}
+                        </span>
+                        <span className="text-[11px] text-slate-400 font-mono">
+                          {c._count?.products || 0} ta tovar
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingCategory(c);
+                          setCategoryFormName(c.name);
+                          setCategoryFormError(null);
+                        }}
+                        className="rounded-lg p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 transition"
+                        title={t.common.edit}
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCategory(c.id, c.name, c._count?.products || 0)}
+                        className="rounded-lg p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/60 transition"
+                        title={t.common.delete}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="py-8 text-center text-sm text-slate-400 dark:text-slate-500">
+                  {t.products.noCategoriesFound}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsCategoryModalOpen(false)}
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              >
+                {t.common.close}
+              </button>
+            </div>
           </div>
         </div>
       )}
