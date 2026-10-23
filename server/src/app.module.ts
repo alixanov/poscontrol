@@ -12,6 +12,8 @@ import { ReportsModule } from './reports/reports.module';
 import { StorageModule } from './storage/storage.module';
 import { AuditLogModule } from './audit-log/audit-log.module';
 
+import { CustomersModule } from './customers/customers.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -34,6 +36,7 @@ import { AuditLogModule } from './audit-log/audit-log.module';
     InventoryModule,
     PosModule,
     ReportsModule,
+    CustomersModule,
   ],
 })
 export class AppModule {}

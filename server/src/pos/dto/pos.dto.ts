@@ -81,6 +81,18 @@ export class CreateOrderDto {
   @Type(() => Number)
   @IsOptional()
   cashReceived?: number;
+
+  @ApiPropertyOptional({ example: 'uuid-of-customer' })
+  @IsString()
+  @IsOptional()
+  customerId?: string;
+
+  @ApiPropertyOptional({ example: 5000 })
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  @IsOptional()
+  useCashback?: number;
 }
 
 export class RefundOrderDto {

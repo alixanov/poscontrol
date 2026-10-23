@@ -10,65 +10,87 @@ export class ReportsService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const completedOrders = await this.prisma.order.findMany({
+    // 1. Database-level aggregation for total historical metrics
+    const totalAgg = await this.prisma.order.aggregate({
+      where: { status: OrderStatus.COMPLETED },
+      _sum: { totalAmount: true },
+      _count: { id: true },
+    });
+    const totalRevenue = totalAgg._sum.totalAmount || 0;
+    const totalOrdersCount = totalAgg._count.id || 0;
+
+    // 2. Database-level aggregation for today's metrics
+    const todayAgg = await this.prisma.order.aggregate({
       where: {
         status: OrderStatus.COMPLETED,
+        createdAt: { gte: today },
       },
-      include: {
-        items: true,
-      },
+      _sum: { totalAmount: true },
+      _count: { id: true },
+      _avg: { totalAmount: true },
     });
+    const todayRevenue = todayAgg._sum.totalAmount || 0;
+    const todayOrdersCount = todayAgg._count.id || 0;
+    const averageReceipt = Math.round(todayAgg._avg.totalAmount || 0);
 
-    const todayOrders = completedOrders.filter(
-      (o) => new Date(o.createdAt) >= today,
-    );
-
-    // Revenue & Profit calculations
-    const totalRevenue = completedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
-    const todayRevenue = todayOrders.reduce((sum, o) => sum + o.totalAmount, 0);
-
-    let totalCost = 0;
-    let todayCost = 0;
-
-    for (const order of completedOrders) {
-      for (const item of order.items) {
-        totalCost += (item.costPrice || 0) * item.quantity;
-      }
-    }
-
-    for (const order of todayOrders) {
-      for (const item of order.items) {
-        todayCost += (item.costPrice || 0) * item.quantity;
-      }
-    }
-
-    const totalProfit = totalRevenue - totalCost;
-    const todayProfit = todayRevenue - todayCost;
-    const averageReceipt =
-      todayOrders.length > 0 ? todayRevenue / todayOrders.length : 0;
-
-    // Count low stock items (stock <= minStockAlert)
-    const lowStockProducts = await this.prisma.product.count({
+    // 3. Selective item fetch only for today's cost calculation
+    const todayItems = await this.prisma.orderItem.findMany({
       where: {
-        isActive: true,
-        stockQuantity: { lte: 5 },
+        order: {
+          status: OrderStatus.COMPLETED,
+          createdAt: { gte: today },
+        },
       },
+      select: { costPrice: true, quantity: true },
     });
+    const todayCost = todayItems.reduce(
+      (acc, item) => acc + (item.costPrice || 0) * item.quantity,
+      0,
+    );
+    const todayProfit = todayRevenue - todayCost;
 
-    const totalProductsCount = await this.prisma.product.count({
-      where: { isActive: true },
+    // 4. Lean cost calculation for lifetime margin
+    const allItems = await this.prisma.orderItem.findMany({
+      where: {
+        order: {
+          status: OrderStatus.COMPLETED,
+        },
+      },
+      select: { costPrice: true, quantity: true },
     });
+    const totalCost = allItems.reduce(
+      (acc, item) => acc + (item.costPrice || 0) * item.quantity,
+      0,
+    );
+    const totalProfit = totalRevenue - totalCost;
+
+    // 5. Stock and customer counts
+    const [lowStockProducts, totalProductsCount, totalCustomersCount] = await Promise.all([
+      this.prisma.product.count({
+        where: {
+          isActive: true,
+          stockQuantity: { lte: 5 },
+        },
+      }),
+      this.prisma.product.count({
+        where: { isActive: true },
+      }),
+      this.prisma.customer.count({
+        where: { isActive: true },
+      }),
+    ]);
 
     return {
       todayRevenue,
       todayProfit,
-      todayOrdersCount: todayOrders.length,
+      todayOrdersCount,
       averageReceipt,
       totalRevenue,
       totalProfit,
-      totalOrdersCount: completedOrders.length,
+      totalOrdersCount,
       lowStockProducts,
       totalProductsCount,
+      totalCustomersCount,
     };
   }
 
@@ -82,8 +104,16 @@ export class ReportsService {
         status: OrderStatus.COMPLETED,
         createdAt: { gte: startDate },
       },
-      include: {
-        items: true,
+      select: {
+        id: true,
+        totalAmount: true,
+        createdAt: true,
+        items: {
+          select: {
+            costPrice: true,
+            quantity: true,
+          },
+        },
       },
       orderBy: { createdAt: 'asc' },
     });

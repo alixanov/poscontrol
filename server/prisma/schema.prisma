@@ -194,16 +194,41 @@ model Order {
   totalAmount    Float
   paymentMethod  PaymentMethod @default(CASH)
   cashReceived   Float?
-  changeGiven    Float?
-  status         OrderStatus   @default(COMPLETED)
-  refundReason   String?
-  createdAt      DateTime      @default(now())
+  changeGiven            Float?
+  status                 OrderStatus   @default(COMPLETED)
+  refundReason           String?
+  customerId             String?
+  customer               Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerCashbackUsed   Float?        @default(0)
+  customerCashbackEarned Float?        @default(0)
+  createdAt              DateTime      @default(now())
 
-  items          OrderItem[]
+  items                  OrderItem[]
 
   @@index([orderNumber])
   @@index([createdAt])
+  @@index([customerId])
   @@map("orders")
+}
+
+model Customer {
+  id              String   @id @default(uuid())
+  name            String
+  phone           String   @unique
+  discountPercent Float    @default(0) // personal discount %
+  cashbackBalance Float    @default(0) // cashback bonus balance in UZS
+  totalPurchases  Float    @default(0) // total spent over lifetime
+  ordersCount     Int      @default(0)
+  notes           String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  orders          Order[]
+
+  @@index([phone])
+  @@index([name])
+  @@map("customers")
 }
 
 model OrderItem {
@@ -240,3 +265,4 @@ model AuditLog {
   @@index([createdAt])
   @@map("audit_logs")
 }
+

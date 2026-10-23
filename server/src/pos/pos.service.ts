@@ -168,8 +168,31 @@ export class PosService {
         }
       }
 
-      const discount = dto.discountAmount || 0;
-      const totalAmount = Math.max(0, subtotal - discount);
+      let discount = dto.discountAmount || 0;
+      let cashbackUsed = 0;
+      let cashbackEarned = 0;
+      let customer = null;
+
+      if (dto.customerId) {
+        customer = await tx.customer.findUnique({ where: { id: dto.customerId } });
+        if (customer && customer.isActive) {
+          if (dto.useCashback && dto.useCashback > 0) {
+            cashbackUsed = Math.min(
+              dto.useCashback,
+              customer.cashbackBalance,
+              Math.max(0, subtotal - discount),
+            );
+          }
+        }
+      }
+
+      const totalDiscount = discount + cashbackUsed;
+      const totalAmount = Math.max(0, subtotal - totalDiscount);
+
+      // Earn 1% cashback on the net paid amount
+      if (customer && customer.isActive && totalAmount > 0) {
+        cashbackEarned = Math.round(totalAmount * 0.01);
+      }
 
       let changeGiven = 0;
       if (dto.paymentMethod === PaymentMethod.CASH && dto.cashReceived) {
@@ -186,8 +209,11 @@ export class PosService {
           orderNumber,
           shiftId: activeShift ? activeShift.id : null,
           cashierId,
+          customerId: customer ? customer.id : null,
+          customerCashbackUsed: cashbackUsed,
+          customerCashbackEarned: cashbackEarned,
           subtotal,
-          discountAmount: discount,
+          discountAmount: totalDiscount,
           totalAmount,
           paymentMethod: dto.paymentMethod,
           cashReceived: dto.cashReceived || totalAmount,
@@ -199,11 +225,27 @@ export class PosService {
         },
         include: {
           items: true,
+          customer: true,
           cashier: {
             select: { id: true, name: true, email: true },
           },
         },
       });
+
+      // Update customer loyalty stats
+      if (customer) {
+        await tx.customer.update({
+          where: { id: customer.id },
+          data: {
+            cashbackBalance: {
+              decrement: cashbackUsed,
+              increment: cashbackEarned,
+            },
+            totalPurchases: { increment: totalAmount },
+            ordersCount: { increment: 1 },
+          },
+        });
+      }
 
       // Update shift expected cash if CASH payment
       if (activeShift && dto.paymentMethod === PaymentMethod.CASH) {
@@ -326,6 +368,7 @@ export class PosService {
         orderBy: { createdAt: 'desc' },
         include: {
           items: true,
+          customer: true,
           cashier: {
             select: { id: true, name: true, email: true },
           },
@@ -342,6 +385,7 @@ export class PosService {
       where: { id },
       include: {
         items: true,
+        customer: true,
         cashier: {
           select: { id: true, name: true, email: true },
         },

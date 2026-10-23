@@ -30,6 +30,13 @@ import {
   Sparkles,
   ArrowRight,
   RotateCcw,
+  Wifi,
+  WifiOff,
+  UserCheck,
+  UserPlus,
+  Gift,
+  FileText,
+  Keyboard,
 } from 'lucide-react';
 
 export default function PosPage() {
@@ -66,11 +73,25 @@ export default function PosPage() {
   const [barcodeInput, setBarcodeInput] = useState('');
   const [mobileTab, setMobileTab] = useState<'catalog' | 'cart'>('catalog');
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [isOnline, setIsOnline] = useState<boolean>(true);
+
   // Shift Modals
   const [isOpenShiftModalOpen, setIsOpenShiftModalOpen] = useState(false);
   const [isCloseShiftModalOpen, setIsCloseShiftModalOpen] = useState(false);
   const [startingCash, setStartingCash] = useState(5000);
   const [actualCash, setActualCash] = useState(0);
+
+  // Customer Loyalty State
+  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
+  const [customerSearchQuery, setCustomerSearchQuery] = useState('');
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
+  const [newCustomerName, setNewCustomerName] = useState('');
+  const [newCustomerPhone, setNewCustomerPhone] = useState('+998');
+  const [newCustomerDiscount, setNewCustomerDiscount] = useState<number>(0);
+  const [newCustomerNotes, setNewCustomerNotes] = useState('');
+  const [useCashback, setUseCashback] = useState<boolean>(false);
 
   // Payment Modal
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -80,6 +101,32 @@ export default function PosPage() {
 
   // Completed Receipt Modal
   const [lastOrder, setLastOrder] = useState<any>(null);
+
+  // Online / Offline Detection
+  useEffect(() => {
+    setIsOnline(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    const pingInterval = setInterval(async () => {
+      try {
+        await api.get('/pos/shift/active');
+        setIsOnline(true);
+      } catch {
+        if (!navigator.onLine) setIsOnline(false);
+      }
+    }, 20000);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      clearInterval(pingInterval);
+    };
+  }, []);
 
   // Fetch active shift
   const { data: activeShift, isLoading: shiftLoading, refetch: refetchShift } = useQuery({
@@ -111,15 +158,114 @@ export default function PosPage() {
     },
   });
 
-  // Global Barcode Scanner Listener (Hardware Scanners emulate rapid keyboard input + Enter)
+  // Customer search query
+  const { data: customerSearchResults, isLoading: customerSearchLoading } = useQuery({
+    queryKey: ['customers-search', customerSearchQuery],
+    queryFn: async () => {
+      if (!customerSearchQuery || customerSearchQuery.trim().length < 2) return [];
+      const res = await api.get(`/customers/search?q=${encodeURIComponent(customerSearchQuery.trim())}`);
+      return res.data;
+    },
+    enabled: isCustomerModalOpen && customerSearchQuery.trim().length >= 2,
+  });
+
+  // Create new customer mutation
+  const createCustomerMutation = useMutation({
+    mutationFn: async () => {
+      const res = await api.post('/customers', {
+        name: newCustomerName.trim(),
+        phone: newCustomerPhone.trim(),
+        discountPercent: Number(newCustomerDiscount) || 0,
+        notes: newCustomerNotes.trim() || undefined,
+      });
+      return res.data;
+    },
+    onSuccess: (newCust) => {
+      setSelectedCustomer(newCust);
+      setIsNewCustomerModalOpen(false);
+      setIsCustomerModalOpen(false);
+      setNewCustomerName('');
+      setNewCustomerPhone('+998');
+      setNewCustomerDiscount(0);
+      setNewCustomerNotes('');
+      queryClient.invalidateQueries({ queryKey: ['customers-search'] });
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.message || 'Xatolik yuz berdi');
+    },
+  });
+
+  // Total and discount calculations
+  const subtotal = getSubtotal();
+  const customerDiscountPercent = selectedCustomer?.discountPercent || 0;
+  const customerDiscountAmount = customerDiscountPercent > 0 ? Math.round((subtotal * customerDiscountPercent) / 100) : 0;
+  const totalDiscount = (discountAmount || 0) + customerDiscountAmount;
+  const subtotalAfterDiscount = Math.max(0, subtotal - totalDiscount);
+
+  const maxAvailableCashback = selectedCustomer ? Math.min(selectedCustomer.cashbackBalance || 0, subtotalAfterDiscount) : 0;
+  const appliedCashback = useCashback ? maxAvailableCashback : 0;
+  const totalAmount = Math.max(0, subtotalAfterDiscount - appliedCashback);
+  const potentialCashbackEarned = selectedCustomer ? Math.round(totalAmount * 0.01) : 0;
+  const changeDue = Math.max(0, (cashReceived || 0) - totalAmount);
+
+  // Global Barcode Scanner Listener and POS Hotkeys
   const scannerBuffer = useRef<string>('');
   const lastKeyTime = useRef<number>(0);
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      // Don't intercept if user is typing in regular search input or modal
+      // F2: Focus search anytime
+      if (e.key === 'F2') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+        return;
+      }
+
+      // Escape: Close modals
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (isPaymentModalOpen) setIsPaymentModalOpen(false);
+        else if (isCustomerModalOpen) setIsCustomerModalOpen(false);
+        else if (isNewCustomerModalOpen) setIsNewCustomerModalOpen(false);
+        else if (lastOrder) setLastOrder(null);
+        return;
+      }
+
       const activeEl = document.activeElement;
       const isInput = activeEl?.tagName === 'INPUT' || activeEl?.tagName === 'TEXTAREA';
+
+      // F4: Pay Cash
+      if (e.key === 'F4' && !isInput) {
+        e.preventDefault();
+        if (cartItems.length > 0 && activeShift) {
+          setPaymentError(null);
+          setPaymentMethod('CASH');
+          setCashReceived(totalAmount);
+          setIsPaymentModalOpen(true);
+        }
+        return;
+      }
+
+      // F8: Pay Card
+      if (e.key === 'F8' && !isInput) {
+        e.preventDefault();
+        if (cartItems.length > 0 && activeShift) {
+          setPaymentError(null);
+          setPaymentMethod('CARD');
+          setCashReceived(totalAmount);
+          setIsPaymentModalOpen(true);
+        }
+        return;
+      }
+
+      // Space: Confirm Payment when modal open
+      if (e.key === ' ' && isPaymentModalOpen && !isInput) {
+        e.preventDefault();
+        checkoutMutation.mutate();
+        return;
+      }
+
       if (isInput) return;
 
       if (e.key === 'Enter') {
@@ -144,7 +290,7 @@ export default function PosPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [cartItems.length, activeShift, isPaymentModalOpen, isCustomerModalOpen, isNewCustomerModalOpen, lastOrder, totalAmount]);
 
   const handleScanBarcode = async (code: string) => {
     try {
@@ -197,19 +343,20 @@ export default function PosPage() {
   // Checkout Mutation
   const checkoutMutation = useMutation({
     mutationFn: async () => {
-      const total = getTotal();
       const payload: any = {
         items: cartItems.map((i) => ({
           productId: i.productId,
           quantity: i.quantity,
           price: i.price,
         })),
-        discountAmount,
+        discountAmount: totalDiscount,
         paymentMethod,
+        customerId: selectedCustomer ? selectedCustomer.id : undefined,
+        useCashback: appliedCashback > 0 ? appliedCashback : undefined,
       };
 
       if (paymentMethod === 'CASH') {
-        payload.cashReceived = cashReceived || total;
+        payload.cashReceived = cashReceived || totalAmount;
       }
 
       const res = await api.post('/pos/orders', payload);
@@ -218,6 +365,8 @@ export default function PosPage() {
     onSuccess: (data) => {
       setLastOrder(data);
       clearCart();
+      setSelectedCustomer(null);
+      setUseCashback(false);
       setIsPaymentModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['pos-products'] });
       queryClient.invalidateQueries({ queryKey: ['active-shift'] });
@@ -226,10 +375,6 @@ export default function PosPage() {
       setPaymentError(err.response?.data?.message || 'Ошибка проведения оплаты');
     },
   });
-
-  const totalAmount = getTotal();
-  const subtotal = getSubtotal();
-  const changeDue = Math.max(0, (cashReceived || 0) - totalAmount);
 
   const openPaymentModal = () => {
     if (cartItems.length === 0) return;
@@ -241,6 +386,81 @@ export default function PosPage() {
 
   const handlePrintReceipt = () => {
     window.print();
+  };
+
+  const handlePrintEscPos = (order: any) => {
+    if (!order) return;
+    const line = '------------------------------------------\n';
+    const dline = '==========================================\n';
+    let text = '';
+    text += '          ' + (t.common.appName || 'POS CONTROL') + '\n';
+    text += '          ' + (t.pos.receiptTitle || 'SAVDO CHEKI') + '\n';
+    text += dline;
+    text += `${t.pos.receiptNo}: ${order.orderNumber}\n`;
+    text += `Sana: ${new Date(order.createdAt).toLocaleString()}\n`;
+    text += `Kassir: ${order.cashier?.name || user?.name || 'Kassir'}\n`;
+    if (order.customer) {
+      text += `Mijoz: ${order.customer.name} (${order.customer.phone})\n`;
+    }
+    text += line;
+    text += 'Nomi                Soni   Narx     Jami\n';
+    text += line;
+    for (const item of order.items || []) {
+      const name = (item.productName || item.product?.name || 'Tovar').padEnd(18).slice(0, 18);
+      const qty = String(item.quantity).padStart(4);
+      const price = String(Math.round(item.price)).padStart(8);
+      const tot = String(Math.round(item.total || item.quantity * item.price)).padStart(9);
+      text += `${name} ${qty} ${price} ${tot}\n`;
+    }
+    text += line;
+    text += `Oraliq summa:           ${formatCurrency(order.subtotal)}\n`;
+    if (order.discountAmount > 0) {
+      text += `Chegirma:              -${formatCurrency(order.discountAmount)}\n`;
+    }
+    if (order.customerCashbackUsed > 0) {
+      text += `Ishlatilgan keshbek:   -${formatCurrency(order.customerCashbackUsed)}\n`;
+    }
+    text += dline;
+    text += `JAMI TO'LOV:            ${formatCurrency(order.totalAmount)}\n`;
+    text += dline;
+    text += `To'lov turi:            ${order.paymentMethod === 'CARD' ? (t.pos.card || 'Plastik karta') : (t.pos.cash || 'Naqd pul')}\n`;
+    if (order.cashReceived) {
+      text += `Qabul qilindi:          ${formatCurrency(order.cashReceived)}\n`;
+    }
+    if (order.changeGiven) {
+      text += `Qaytim:                 ${formatCurrency(order.changeGiven)}\n`;
+    }
+    if (order.customerCashbackEarned > 0) {
+      text += `Hisoblangan keshbek:   +${formatCurrency(order.customerCashbackEarned)}\n`;
+    }
+    text += '\n      XARIDINGIZ UCHUN RAXMAT!\n';
+    text += '        Yana tashrif buyuring!\n\n\n';
+
+    const printWindow = window.open('', '_blank', 'width=380,height=600');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>ESC/POS Receipt - ${order.orderNumber}</title>
+            <style>
+              body { font-family: 'Courier New', monospace; font-size: 12px; margin: 0; padding: 12px; color: #000; width: 300px; }
+              pre { margin: 0; white-space: pre-wrap; word-break: break-all; }
+              @media print {
+                @page { margin: 0; size: 58mm auto; }
+                body { width: 100%; padding: 0; }
+              }
+            </style>
+          </head>
+          <body>
+            <pre>${text}</pre>
+            <script>
+              window.onload = function() { window.print(); };
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
   };
 
   return (
@@ -279,6 +499,38 @@ export default function PosPage() {
 
         {/* Action Controls in Header */}
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          {/* Network Connection Status */}
+          {isOnline ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200/70 dark:border-emerald-800/80 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-400">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="hidden md:inline">{t.pos.statusOnline}</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-950 border border-red-300 dark:border-red-800 px-2.5 py-1 text-xs font-bold text-red-700 dark:text-red-400 animate-pulse">
+              <WifiOff className="h-3.5 w-3.5" />
+              <span>{t.pos.statusOffline}</span>
+            </span>
+          )}
+
+          {/* Hotkey Chips Strip */}
+          <div className="hidden xl:flex items-center gap-2 border-l border-r border-slate-200 dark:border-slate-800 px-3 py-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+            <span className="inline-flex items-center gap-1">
+              <kbd className="rounded bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-800 dark:text-slate-200">F2</kbd>
+              <span>{t.pos.hotkeySearch?.replace('F2 ', '') || 'Qidiruv'}</span>
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <kbd className="rounded bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-800 dark:text-slate-200">F4</kbd>
+              <span>{t.pos.hotkeyCash?.replace('F4 ', '') || 'Naqd'}</span>
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <kbd className="rounded bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-800 dark:text-slate-200">F8</kbd>
+              <span>{t.pos.hotkeyCard?.replace('F8 ', '') || 'Karta'}</span>
+            </span>
+          </div>
+
           <ThemeToggle />
           <LanguageSwitcher showIcon />
 
@@ -388,6 +640,7 @@ export default function PosPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-3 h-5 w-5 text-slate-400" />
               <input
+                ref={searchInputRef}
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -603,6 +856,56 @@ export default function PosPage() {
             </div>
           ) : null}
 
+          {/* Customer Loyalty Selector Pill */}
+          <div className="px-4 pt-3 pb-1 border-b border-slate-100 dark:border-slate-800/80">
+            {selectedCustomer ? (
+              <div className="flex items-center justify-between rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 p-2.5 shadow-xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-600 text-white shrink-0 shadow-sm">
+                    <UserCheck className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        {selectedCustomer.name}
+                      </span>
+                      {selectedCustomer.discountPercent > 0 && (
+                        <span className="rounded bg-purple-100 dark:bg-purple-900/80 px-1.5 py-0.2 text-[9px] font-extrabold text-purple-700 dark:text-purple-300">
+                          -{selectedCustomer.discountPercent}%
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-purple-700 dark:text-purple-300 font-mono mt-0.5">
+                      {selectedCustomer.phone} • {t.pos.cashbackBalance}: <strong>{formatCurrency(selectedCustomer.cashbackBalance || 0)}</strong>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setSelectedCustomer(null); setUseCashback(false); }}
+                  className="rounded-lg p-1 text-slate-400 hover:bg-purple-100 dark:hover:bg-purple-900/60 hover:text-red-500 transition"
+                  title={t.common.delete}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsCustomerModalOpen(true)}
+                className="w-full flex items-center justify-between rounded-xl border border-dashed border-purple-300 dark:border-purple-800 bg-purple-50/40 dark:bg-purple-950/20 px-3 py-2 text-xs font-semibold text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 transition"
+              >
+                <span className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                  {t.pos.selectCustomer}
+                </span>
+                <span className="text-[10px] font-bold bg-purple-100 dark:bg-purple-900/50 px-2 py-0.5 rounded-full">
+                  + {t.pos.customer}
+                </span>
+              </button>
+            )}
+          </div>
+
           {/* Cart Items List */}
           <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 p-4">
             {cartItems.length === 0 ? (
@@ -688,6 +991,7 @@ export default function PosPage() {
               <span className="font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(subtotal)}</span>
             </div>
 
+            {/* Manual Discount */}
             <div className="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
               <span>{t.pos.discount}:</span>
               <div className="flex items-center gap-1">
@@ -701,6 +1005,38 @@ export default function PosPage() {
                 />
               </div>
             </div>
+
+            {/* Customer Discount & Cashback Options */}
+            {selectedCustomer && (
+              <div className="space-y-1.5 pt-1 border-t border-dashed border-purple-200 dark:border-purple-800/80">
+                {customerDiscountAmount > 0 && (
+                  <div className="flex justify-between items-center text-xs text-purple-600 dark:text-purple-400 font-semibold">
+                    <span>{t.pos.customerDiscount} (-{selectedCustomer.discountPercent}%):</span>
+                    <span>-{formatCurrency(customerDiscountAmount)}</span>
+                  </div>
+                )}
+                {selectedCustomer.cashbackBalance > 0 && subtotalAfterDiscount > 0 && (
+                  <label className="flex items-center justify-between p-2 rounded-xl bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200/60 dark:border-purple-800/60 cursor-pointer">
+                    <span className="flex items-center gap-1.5 text-xs font-semibold text-purple-700 dark:text-purple-300">
+                      <Gift className="h-3.5 w-3.5 text-purple-500" />
+                      {t.pos.useCashback} ({formatCurrency(maxAvailableCashback)})
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={useCashback}
+                      onChange={(e) => setUseCashback(e.target.checked)}
+                      className="h-4 w-4 rounded text-purple-600 focus:ring-purple-500"
+                    />
+                  </label>
+                )}
+                {potentialCashbackEarned > 0 && (
+                  <div className="flex justify-between items-center text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                    <span>{t.pos.cashbackEarned} (+1%):</span>
+                    <span>+{formatCurrency(potentialCashbackEarned)}</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="flex justify-between items-baseline pt-2 border-t border-slate-200 dark:border-slate-800">
               <span className="text-sm font-bold text-slate-900 dark:text-white">{t.pos.totalToPay}:</span>
@@ -929,6 +1265,24 @@ export default function PosPage() {
                     </div>
                   </>
                 )}
+                {lastOrder.customer && (
+                  <div className="flex justify-between text-[11px] text-purple-700 dark:text-purple-300">
+                    <span>{t.pos.customer}:</span>
+                    <span>{lastOrder.customer.name} ({lastOrder.customer.phone})</span>
+                  </div>
+                )}
+                {lastOrder.customerCashbackUsed > 0 && (
+                  <div className="flex justify-between text-[11px] text-purple-600 dark:text-purple-400">
+                    <span>{t.pos.useCashback}:</span>
+                    <span>-{formatCurrency(lastOrder.customerCashbackUsed)}</span>
+                  </div>
+                )}
+                {lastOrder.customerCashbackEarned > 0 && (
+                  <div className="flex justify-between text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                    <span>{t.pos.cashbackEarned}:</span>
+                    <span>+{formatCurrency(lastOrder.customerCashbackEarned)}</span>
+                  </div>
+                )}
               </div>
 
               <div className="text-center pt-2 text-[10px] text-slate-400 dark:text-slate-500">
@@ -936,11 +1290,11 @@ export default function PosPage() {
               </div>
             </div>
 
-            <div className="mt-5 flex items-center justify-between gap-3">
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-2.5">
               <button
                 type="button"
                 onClick={handlePrintReceipt}
-                className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-slate-900 dark:bg-slate-800 py-3 text-sm font-bold text-white hover:bg-slate-800 dark:hover:bg-slate-700 transition shadow"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-slate-900 dark:bg-slate-800 py-3 text-xs sm:text-sm font-bold text-white hover:bg-slate-800 dark:hover:bg-slate-700 transition shadow"
               >
                 <Printer className="h-4 w-4" />
                 <span>{t.pos.printReceipt}</span>
@@ -948,8 +1302,17 @@ export default function PosPage() {
 
               <button
                 type="button"
+                onClick={() => handlePrintEscPos(lastOrder)}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-indigo-600 py-3 text-xs sm:text-sm font-bold text-white hover:bg-indigo-700 transition shadow"
+              >
+                <FileText className="h-4 w-4" />
+                <span>{t.pos.printEscPos}</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setLastOrder(null)}
-                className="flex-1 rounded-2xl bg-blue-600 py-3 text-sm font-bold text-white hover:bg-blue-700 transition shadow"
+                className="w-full sm:w-auto sm:flex-1 rounded-2xl bg-blue-600 py-3 text-xs sm:text-sm font-bold text-white hover:bg-blue-700 transition shadow"
               >
                 {t.pos.newSale}
               </button>
@@ -1071,6 +1434,205 @@ export default function PosPage() {
           </div>
         </div>
       )}
+
+      {/* MODAL 5: Customer Search / Selection Modal */}
+      {isCustomerModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-3 sm:p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800 max-h-[92vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <UserCheck className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">{t.pos.customer}</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCustomerModalOpen(false)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Phone or Name Search Input */}
+            <div className="relative mb-3">
+              <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                autoFocus
+                value={customerSearchQuery}
+                onChange={(e) => setCustomerSearchQuery(e.target.value)}
+                placeholder="+998 90 ... / Ismi"
+                className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 py-2.5 pl-10 pr-4 text-sm font-semibold text-slate-900 dark:text-white outline-none focus:border-purple-600 focus:bg-white dark:focus:bg-slate-900"
+              />
+            </div>
+
+            {/* Search Results List */}
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 max-h-64 my-1">
+              {customerSearchLoading ? (
+                <div className="py-8 text-center text-xs text-slate-400">{t.common.loading}</div>
+              ) : customerSearchResults && customerSearchResults.length > 0 ? (
+                customerSearchResults.map((c: any) => (
+                  <div
+                    key={c.id}
+                    onClick={() => {
+                      setSelectedCustomer(c);
+                      setIsCustomerModalOpen(false);
+                      setCustomerSearchQuery('');
+                    }}
+                    className="py-2.5 px-2 flex items-center justify-between gap-2 hover:bg-purple-50/50 dark:hover:bg-purple-950/30 rounded-xl cursor-pointer transition"
+                  >
+                    <div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>{c.name}</span>
+                        {c.discountPercent > 0 && (
+                          <span className="rounded bg-purple-100 dark:bg-purple-900/80 px-1.5 py-0.2 text-[9px] font-extrabold text-purple-700 dark:text-purple-300">
+                            -{c.discountPercent}%
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
+                        {c.phone}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs font-bold text-purple-700 dark:text-purple-300">
+                        {formatCurrency(c.cashbackBalance || 0)}
+                      </div>
+                      <div className="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        {t.pos.cashbackBalance}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : customerSearchQuery.trim().length >= 2 ? (
+                <div className="py-6 text-center text-xs text-slate-400">
+                  <p className="mb-2">{t.pos.customerNotFound}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewCustomerPhone(customerSearchQuery);
+                      setIsNewCustomerModalOpen(true);
+                    }}
+                    className="rounded-xl bg-purple-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-purple-700"
+                  >
+                    + {t.pos.addNewCustomer}
+                  </button>
+                </div>
+              ) : (
+                <div className="py-8 text-center text-xs text-slate-400">
+                  Qidirish uchun telefon raqami yoki ismni kiriting
+                </div>
+              )}
+            </div>
+
+            {/* Modal Bottom Actions */}
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => setIsNewCustomerModalOpen(true)}
+                className="flex items-center gap-1.5 text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline"
+              >
+                <UserPlus className="h-4 w-4" />
+                <span>+ {t.pos.addNewCustomer}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCustomerModalOpen(false)}
+                className="rounded-xl px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                {t.common.cancel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 6: Add New Customer Quick Modal */}
+      {isNewCustomerModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 p-3 sm:p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">{t.pos.addNewCustomer}</h2>
+              <button
+                type="button"
+                onClick={() => setIsNewCustomerModalOpen(false)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                createCustomerMutation.mutate();
+              }}
+              className="space-y-3"
+            >
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  {t.pos.customerName} *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newCustomerName}
+                  onChange={(e) => setNewCustomerName(e.target.value)}
+                  placeholder="Ism Familiya"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-2 px-3 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-purple-600 focus:bg-white dark:focus:bg-slate-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  {t.pos.customerPhone} *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newCustomerPhone}
+                  onChange={(e) => setNewCustomerPhone(e.target.value)}
+                  placeholder="+998901234567"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-2 px-3 text-xs font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-purple-600 focus:bg-white dark:focus:bg-slate-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  {t.pos.customerDiscount} (%)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={newCustomerDiscount}
+                  onChange={(e) => setNewCustomerDiscount(parseFloat(e.target.value) || 0)}
+                  placeholder="0"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-2 px-3 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-purple-600 focus:bg-white dark:focus:bg-slate-900"
+                />
+              </div>
+
+              <div className="mt-5 flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsNewCustomerModalOpen(false)}
+                  className="rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  {t.common.cancel}
+                </button>
+                <button
+                  type="submit"
+                  disabled={createCustomerMutation.isPending}
+                  className="rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white shadow hover:bg-purple-700 transition disabled:opacity-50"
+                >
+                  {createCustomerMutation.isPending ? t.common.loading : t.common.save}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
