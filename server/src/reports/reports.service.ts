@@ -74,7 +74,7 @@ export class ReportsService {
 
   async getSalesChart(days = 7) {
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    startDate.setDate(startDate.getDate() - (days - 1));
     startDate.setHours(0, 0, 0, 0);
 
     const orders = await this.prisma.order.findMany({
@@ -90,7 +90,7 @@ export class ReportsService {
 
     const grouped: Record<string, { date: string; revenue: number; profit: number; count: number }> = {};
 
-    for (let i = 0; i <= days; i++) {
+    for (let i = 0; i < days; i++) {
       const d = new Date(startDate);
       d.setDate(d.getDate() + i);
       const key = d.toISOString().slice(5, 10); // MM-DD
