@@ -241,26 +241,29 @@ export class PosService {
     return this.prisma.$transaction(async (tx) => {
       // Return items to stock
       for (const item of order.items) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stockQuantity: { increment: item.quantity } },
-        });
+        const prod = await tx.product.findUnique({ where: { id: item.productId } });
+        if (prod) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stockQuantity: { increment: item.quantity } },
+          });
 
-        if (defaultWarehouse) {
-          await tx.stock.upsert({
-            where: {
-              productId_warehouseId: {
+          if (defaultWarehouse) {
+            await tx.stock.upsert({
+              where: {
+                productId_warehouseId: {
+                  productId: item.productId,
+                  warehouseId: defaultWarehouse.id,
+                },
+              },
+              update: { quantity: { increment: item.quantity } },
+              create: {
                 productId: item.productId,
                 warehouseId: defaultWarehouse.id,
+                quantity: item.quantity,
               },
-            },
-            update: { quantity: { increment: item.quantity } },
-            create: {
-              productId: item.productId,
-              warehouseId: defaultWarehouse.id,
-              quantity: item.quantity,
-            },
-          });
+            });
+          }
         }
       }
 

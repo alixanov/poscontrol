@@ -120,6 +120,7 @@ export default function PosPage() {
       // Don't intercept if user is typing in regular search input or modal
       const activeEl = document.activeElement;
       const isInput = activeEl?.tagName === 'INPUT' || activeEl?.tagName === 'TEXTAREA';
+      if (isInput) return;
 
       if (e.key === 'Enter') {
         if (scannerBuffer.current.length >= 4) {

@@ -81,7 +81,7 @@ export default function LoginPage() {
   };
 
   const handlePinKey = (digit: string) => {
-    if (pinCode.length < 6) {
+    if (pinCode.length < 4) {
       const newPin = pinCode + digit;
       setPinCode(newPin);
       if (newPin.length === 4) {
